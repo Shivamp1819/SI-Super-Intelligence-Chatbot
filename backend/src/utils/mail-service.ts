@@ -1,5 +1,15 @@
 import nodemailer from "nodemailer";
 import { config } from "dotenv";
+import dns from "node:dns";
+
+// Force IPv4 DNS lookups to avoid ENETUNREACH on cloud containers without IPv6 routes
+if (dns.setDefaultResultOrder) {
+  try {
+    dns.setDefaultResultOrder("ipv4first");
+  } catch (e) {
+    // ignore
+  }
+}
 
 /**
  * Generates a random 6-digit numeric OTP.
@@ -10,8 +20,9 @@ export const generateNumericOtp = (): string => {
 
 /**
  * Creates a nodemailer transporter using env variables if configured.
+ * @param targetPort Optional explicit port (defaults to configured SMTP_PORT or 587)
  */
-const createTransporter = () => {
+const createTransporter = (targetPort?: number) => {
   // Ensure the latest environment variables from .env are loaded
   try {
     config({ override: true });
@@ -19,8 +30,9 @@ const createTransporter = () => {
     // ignore
   }
 
-  const host = (process.env.SMTP_HOST || process.env.EMAIL_HOST || "").trim();
-  const port = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT) || 465;
+  const host = (process.env.SMTP_HOST || process.env.EMAIL_HOST || "smtp.gmail.com").trim();
+  const configuredPort = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT);
+  const port = targetPort || configuredPort || 587;
   const user = (process.env.SMTP_USER || process.env.EMAIL_USER || "").trim();
   // Strip whitespace from passwords (Google App Passwords are often copied as "abcd efgh ijkl mnop")
   const pass = (process.env.SMTP_PASS || process.env.EMAIL_PASS || "").replace(/\s+/g, "");
@@ -32,13 +44,14 @@ const createTransporter = () => {
       port,
       secure: isSecure,
       auth: { user, pass },
-      connectionTimeout: 6000,
-      greetingTimeout: 6000,
-      socketTimeout: 8000,
+      family: 4, // CRITICAL: Force IPv4 socket to prevent ENETUNREACH on Render/cloud hosts
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 7000,
       tls: {
         rejectUnauthorized: false,
       },
-    });
+    } as any);
   }
 
   return null;
@@ -110,7 +123,7 @@ export const sendOtpEmail = async (
       });
 
       if (res.ok) {
-        console.log(`[MAIL SERVICE] Real email sent to ${recipientEmail} via Resend (HTTPS)`);
+        console.log(`[MAIL SERVICE] Email sent to ${recipientEmail} via Resend (HTTPS)`);
         return {
           success: true,
           sentViaSmtp: true,
@@ -125,57 +138,48 @@ export const sendOtpEmail = async (
     }
   }
 
-  // 2. Try Nodemailer SMTP
-  const transporter = createTransporter();
+  // 2. Try Nodemailer with IPv4 on primary port, then alternative port (587 <-> 465)
+  const user = (process.env.SMTP_USER || process.env.EMAIL_USER || "").trim();
+  const pass = (process.env.SMTP_PASS || process.env.EMAIL_PASS || "").replace(/\s+/g, "");
 
-  if (transporter) {
-    try {
-      await transporter.sendMail({
-        from: `"SI Super Intelligence" <${
-          process.env.SMTP_USER || process.env.EMAIL_USER || "no-reply@sichatbot.com"
-        }>`,
-        to: recipientEmail,
-        subject,
-        html: htmlContent,
-      });
+  if (user && pass) {
+    const configuredPort = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT) || 587;
+    const portsToTry = configuredPort === 465 ? [465, 587] : [587, 465];
 
-      console.log(`[MAIL SERVICE] Real email sent to ${recipientEmail} via SMTP`);
-      return {
-        success: true,
-        sentViaSmtp: true,
-        message: `Verification code sent to ${recipientEmail}`,
-      };
-    } catch (err: any) {
-      console.error("[MAIL SERVICE] SMTP Transporter error:", err?.message || err);
-      const isBadCredentials =
-        err?.message?.includes("535") ||
-        err?.message?.includes("BadCredentials") ||
-        err?.code === "EAUTH";
+    for (const port of portsToTry) {
+      const transporter = createTransporter(port);
+      if (transporter) {
+        try {
+          await transporter.sendMail({
+            from: `"SI Super Intelligence" <${user}>`,
+            to: recipientEmail,
+            subject,
+            html: htmlContent,
+          });
 
-      const failureNote = isBadCredentials
-        ? "Google requires a 16-character App Password (myaccount.google.com/apppasswords)."
-        : `Cloud SMTP timeout/blocked by host (${err?.message || "Check email credentials"}).`;
-
-      return {
-        success: true,
-        sentViaSmtp: false,
-        previewOtp: otp,
-        message: `${failureNote} Verification code is ready below.`,
-      };
+          console.log(`[MAIL SERVICE] Email sent to ${recipientEmail} via SMTP (port ${port}, IPv4)`);
+          return {
+            success: true,
+            sentViaSmtp: true,
+            message: `Verification code sent to ${recipientEmail}`,
+          };
+        } catch (err: any) {
+          console.warn(`[MAIL SERVICE] SMTP attempt failed on port ${port} (IPv4):`, err?.message || err);
+        }
+      }
     }
   }
 
-  // Fallback when SMTP is not yet configured in .env
+  // Fallback: If cloud host blocks SMTP and Resend not configured
   console.log("=================================================");
   console.log(`[OTP SERVICE] EMAIL: ${recipientEmail}`);
   console.log(`[OTP SERVICE] VERIFICATION OTP: ${otp}`);
-  console.log("NOTE: Add RESEND_API_KEY or EMAIL_USER/EMAIL_PASS for inbox delivery.");
   console.log("=================================================");
 
   return {
     success: true,
     sentViaSmtp: false,
     previewOtp: otp,
-    message: "Email service not configured. Verification code provided below.",
+    message: "Verification code generated! Please enter the code below.",
   };
 };

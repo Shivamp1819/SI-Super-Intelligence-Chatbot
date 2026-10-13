@@ -1,5 +1,9 @@
 import { config } from "dotenv";
 config();
+import dns from "node:dns";
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder("ipv4first");
+}
 import app from "./app.js";
 import { connectToDatabase, disconnectFromDatabase } from "./db/connection.js";
 
