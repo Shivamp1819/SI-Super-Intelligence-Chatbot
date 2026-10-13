@@ -26,20 +26,19 @@ const createTransporter = () => {
   const pass = (process.env.SMTP_PASS || process.env.EMAIL_PASS || "").replace(/\s+/g, "");
 
   if (user && pass) {
-    if (host && host !== "smtp.gmail.com") {
-      return nodemailer.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        auth: { user, pass },
-      });
-    } else {
-      // Default: Gmail SMTP
-      return nodemailer.createTransport({
-        service: "gmail",
-        auth: { user, pass },
-      });
-    }
+    const isSecure = port === 465;
+    return nodemailer.createTransport({
+      host: host || "smtp.gmail.com",
+      port,
+      secure: isSecure,
+      auth: { user, pass },
+      connectionTimeout: 6000,
+      greetingTimeout: 6000,
+      socketTimeout: 8000,
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
   }
 
   return null;
@@ -92,6 +91,41 @@ export const sendOtpEmail = async (
     </div>
   `;
 
+  // 1. Check for HTTPS-based Resend API (bypasses Render/cloud SMTP port blocks)
+  const resendApiKey = (process.env.RESEND_API_KEY || "").trim();
+  if (resendApiKey) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: process.env.RESEND_FROM || "SI Super Intelligence <onboarding@resend.dev>",
+          to: [recipientEmail],
+          subject,
+          html: htmlContent,
+        }),
+      });
+
+      if (res.ok) {
+        console.log(`[MAIL SERVICE] Real email sent to ${recipientEmail} via Resend (HTTPS)`);
+        return {
+          success: true,
+          sentViaSmtp: true,
+          message: `Verification code sent to ${recipientEmail}`,
+        };
+      } else {
+        const errorBody = await res.json().catch(() => ({}));
+        console.error("[MAIL SERVICE] Resend API error response:", errorBody);
+      }
+    } catch (apiError: any) {
+      console.error("[MAIL SERVICE] Resend API network error:", apiError?.message || apiError);
+    }
+  }
+
+  // 2. Try Nodemailer SMTP
   const transporter = createTransporter();
 
   if (transporter) {
@@ -105,7 +139,7 @@ export const sendOtpEmail = async (
         html: htmlContent,
       });
 
-      console.log(`[MAIL SERVICE] Real email sent to ${recipientEmail}`);
+      console.log(`[MAIL SERVICE] Real email sent to ${recipientEmail} via SMTP`);
       return {
         success: true,
         sentViaSmtp: true,
@@ -119,8 +153,8 @@ export const sendOtpEmail = async (
         err?.code === "EAUTH";
 
       const failureNote = isBadCredentials
-        ? "Google requires a 16-character App Password (myaccount.google.com/apppasswords), not standard password."
-        : `SMTP delivery failed (${err?.message || "Check email credentials"}).`;
+        ? "Google requires a 16-character App Password (myaccount.google.com/apppasswords)."
+        : `Cloud SMTP timeout/blocked by host (${err?.message || "Check email credentials"}).`;
 
       return {
         success: true,
@@ -135,13 +169,13 @@ export const sendOtpEmail = async (
   console.log("=================================================");
   console.log(`[OTP SERVICE] EMAIL: ${recipientEmail}`);
   console.log(`[OTP SERVICE] VERIFICATION OTP: ${otp}`);
-  console.log("NOTE: Add EMAIL_USER & EMAIL_PASS in backend/.env for real inbox delivery.");
+  console.log("NOTE: Add RESEND_API_KEY or EMAIL_USER/EMAIL_PASS for inbox delivery.");
   console.log("=================================================");
 
   return {
     success: true,
     sentViaSmtp: false,
     previewOtp: otp,
-    message: "Email SMTP not configured in .env. Verification code provided below.",
+    message: "Email service not configured. Verification code provided below.",
   };
 };
