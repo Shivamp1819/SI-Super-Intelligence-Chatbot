@@ -23,7 +23,7 @@ export const verifyToken = (
   jwt.verify(
     token,
     process.env.JWT_SECRET as string,
-    (err, success) => {
+    (err: any, success: any) => {
       if (err) {
         return res.status(401).json({ message: "Token Expired or Invalid" });
       }

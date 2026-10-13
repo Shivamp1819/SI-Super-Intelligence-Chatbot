@@ -26,7 +26,7 @@ const allowedOrigins = [
 // CORS middleware
 app.use(
   cors({
-    origin: (origin, callback) => {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       if (!origin) return callback(null, true);
       if (
         process.env.NODE_ENV !== "production" ||
@@ -53,7 +53,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 // Health check endpoint for deployment monitoring
-app.get("/health", (req, res) => {
+app.get("/health", (req: express.Request, res: express.Response) => {
   res.status(200).json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
