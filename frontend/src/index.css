@@ -218,3 +218,47 @@ input:autofill {
     transform: scaleY(0.7);
   }
 }
+
+/* 60fps Hardware-Accelerated Dynamic Robot Animations */
+@keyframes robotFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(0.8deg);
+  }
+}
+
+@keyframes robotWave {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(-6deg) scale(1.04);
+  }
+  50% {
+    transform: rotate(6deg) scale(1.04);
+  }
+  75% {
+    transform: rotate(-4deg) scale(1.02);
+  }
+}
+
+@keyframes pulseBadge {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(0, 255, 252, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(0, 255, 252, 0.5);
+  }
+}
+
+@keyframes neonPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 20px rgba(0, 255, 252, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 38px rgba(0, 255, 252, 0.75));
+  }
+}
+

@@ -17,6 +17,7 @@ import {
   resetUserPassword,
 } from "../helpers/api-communicator";
 import { FiCheckCircle, FiArrowLeft, FiKey } from "react-icons/fi";
+import DynamicRobot from "../components/robot/DynamicRobot";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -237,7 +238,7 @@ const Login = () => {
         boxSizing: "border-box",
       }}
     >
-      {/* Robot Image on Left Side */}
+      {/* Interactive 3D Dynamic Robot */}
       <Box
         display={{ md: "flex", sm: "none", xs: "none" }}
         alignItems={"center"}
@@ -245,15 +246,17 @@ const Login = () => {
         flex={1}
         pl={{ md: 2, lg: 6 }}
       >
-        <img
-          src="airobot.png"
-          alt="Robot"
-          style={{
-            width: "360px",
-            maxHeight: "500px",
-            objectFit: "contain",
-            filter: "drop-shadow(0 10px 25px rgba(0, 255, 252, 0.22))",
-          }}
+        <DynamicRobot
+          width={{ md: "340px", lg: "380px" }}
+          maxHeight="520px"
+          bubbleText={
+            mode === "login"
+              ? "⚡ Welcome back! Ready to chat?"
+              : "🔒 Let's get your password reset!"
+          }
+          enableScrollReaction={true}
+          enableMouseTracking={true}
+          showBubble={true}
         />
       </Box>
 
