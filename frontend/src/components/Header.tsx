@@ -70,7 +70,7 @@ const Header = () => {
                 bg="#51538f"
                 textColor="white"
                 to="/signup"
-                text="Signup"
+                text="Sign Up"
                 fontSize="12px"
                 padding="5px 12px"
               />

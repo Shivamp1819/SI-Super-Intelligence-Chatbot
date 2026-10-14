@@ -29,7 +29,7 @@ export const signupUser = async (
     confirmPassword,
   });
   if (res.status !== 201) {
-    throw new Error("Unable to Signup");
+    throw new Error("Unable to Sign Up");
   }
   return res.data;
 };

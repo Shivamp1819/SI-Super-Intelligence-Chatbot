@@ -430,7 +430,7 @@ const Login = () => {
                       textDecoration: "none",
                     }}
                   >
-                    Signup here
+                    Sign Up here
                   </Link>
                 </Typography>
               </Box>

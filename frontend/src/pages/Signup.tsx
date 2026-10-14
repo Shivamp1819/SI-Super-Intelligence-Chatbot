@@ -227,7 +227,7 @@ const Signup = () => {
               color="white"
               mb={0.3}
             >
-              Signup
+              Sign Up
             </Typography>
             <Typography
               variant="caption"
