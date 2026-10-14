@@ -45,9 +45,9 @@ const createTransporter = (targetPort?: number) => {
       secure: isSecure,
       auth: { user, pass },
       family: 4, // CRITICAL: Force IPv4 socket to prevent ENETUNREACH on Render/cloud hosts
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
-      socketTimeout: 7000,
+      connectionTimeout: 3500,
+      greetingTimeout: 3500,
+      socketTimeout: 5000,
       tls: {
         rejectUnauthorized: false,
       },
@@ -104,10 +104,63 @@ export const sendOtpEmail = async (
     </div>
   `;
 
-  // 1. Check for HTTPS-based Resend API (bypasses Render/cloud SMTP port blocks)
+  // 1. Check for Brevo API (HTTPS-based, 300 free emails/day to any recipient, port 443)
+  const brevoApiKey = (process.env.BREVO_API_KEY || "").trim();
+  if (brevoApiKey) {
+    try {
+      const senderEmail = (
+        process.env.BREVO_SENDER ||
+        process.env.EMAIL_USER ||
+        "mrspsidhauli@gmail.com"
+      ).trim();
+      const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "api-key": brevoApiKey,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          sender: { name: "SI Super Intelligence", email: senderEmail },
+          to: [{ email: recipientEmail }],
+          subject,
+          htmlContent,
+        }),
+      });
+
+      if (res.ok) {
+        console.log(`[MAIL SERVICE] Email successfully sent to ${recipientEmail} via Brevo API (HTTPS)`);
+        return {
+          success: true,
+          sentViaSmtp: true,
+          message: `Verification code sent to ${recipientEmail}`,
+        };
+      } else {
+        const errorText = await res.text().catch(() => "");
+        console.error(`[MAIL SERVICE] Brevo API error response (HTTP ${res.status}):`, errorText);
+      }
+    } catch (apiError: any) {
+      console.error("[MAIL SERVICE] Brevo API network error:", apiError?.message || apiError);
+    }
+  }
+
+  // 2. Check for HTTPS-based Resend API (bypasses Render/cloud SMTP port blocks)
   const resendApiKey = (process.env.RESEND_API_KEY || "").trim();
   if (resendApiKey) {
     try {
+      let fromAddress = (process.env.RESEND_FROM || "").trim();
+      // Resend forbids sending from unverified public domains (@gmail.com, @yahoo.com, etc.)
+      // Fallback to onboarding@resend.dev to prevent validation crashes
+      if (
+        !fromAddress ||
+        fromAddress.includes("@gmail.com") ||
+        fromAddress.includes("@yahoo.com") ||
+        fromAddress.includes("@outlook.com") ||
+        fromAddress.includes("@hotmail.com")
+      ) {
+        fromAddress = "SI Super Intelligence <onboarding@resend.dev>";
+      }
+
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -115,7 +168,7 @@ export const sendOtpEmail = async (
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: process.env.RESEND_FROM || "SI Super Intelligence <onboarding@resend.dev>",
+          from: fromAddress,
           to: [recipientEmail],
           subject,
           html: htmlContent,
@@ -123,22 +176,28 @@ export const sendOtpEmail = async (
       });
 
       if (res.ok) {
-        console.log(`[MAIL SERVICE] Email sent to ${recipientEmail} via Resend (HTTPS)`);
+        console.log(`[MAIL SERVICE] Email successfully sent to ${recipientEmail} via Resend (HTTPS)`);
         return {
           success: true,
           sentViaSmtp: true,
           message: `Verification code sent to ${recipientEmail}`,
         };
       } else {
-        const errorBody = await res.json().catch(() => ({}));
-        console.error("[MAIL SERVICE] Resend API error response:", errorBody);
+        const errorText = await res.text().catch(() => "");
+        console.error(`[MAIL SERVICE] Resend API error response (HTTP ${res.status}):`, errorText);
+        if (errorText.includes("You can only send testing emails to your own email address")) {
+          console.warn(
+            `[MAIL SERVICE] RESEND SANDBOX RESTRICTION: Resend account owner email is different from recipient ${recipientEmail}. In Resend test mode, emails can only be delivered to the Resend account owner's email address.`
+          );
+        }
       }
     } catch (apiError: any) {
       console.error("[MAIL SERVICE] Resend API network error:", apiError?.message || apiError);
     }
   }
 
-  // 2. Try Nodemailer with IPv4 on primary port, then alternative port (587 <-> 465)
+  // 3. Try Nodemailer with IPv4 on primary port, then alternative port (587 <-> 465)
+  // (Works locally; on Render free/basic tiers, outbound ports 465/587 may be blocked)
   const user = (process.env.SMTP_USER || process.env.EMAIL_USER || "").trim();
   const pass = (process.env.SMTP_PASS || process.env.EMAIL_PASS || "").replace(/\s+/g, "");
 
@@ -170,7 +229,7 @@ export const sendOtpEmail = async (
     }
   }
 
-  // Fallback: If cloud host blocks SMTP and Resend not configured
+  // Fallback: If cloud host blocks SMTP and HTTP email APIs are not configured or failed
   console.log("=================================================");
   console.log(`[OTP SERVICE] EMAIL: ${recipientEmail}`);
   console.log(`[OTP SERVICE] VERIFICATION OTP: ${otp}`);
