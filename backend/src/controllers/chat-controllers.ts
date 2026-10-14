@@ -232,32 +232,36 @@ export const generateChatCompletion = async (
 
       currentParts.push(finalPromptText + extraPromptContext);
 
-      let replyText = "";
-      let lastError: any = null;
-
-      for (const mName of uniqueModels) {
-        try {
-          const model = genAI.getGenerativeModel({
-            model: mName,
-            generationConfig: {
-              maxOutputTokens: 2048,
-              temperature: 0.7,
-            },
-          });
-          const chatSession = model.startChat({ history });
-          const result = await chatSession.sendMessage(
-            currentParts.length === 1 ? currentParts[0] : currentParts
-          );
-          replyText = result.response.text();
-          if (replyText) break;
-        } catch (err: any) {
-          lastError = err;
-          console.warn(`[Gemini] Model ${mName} error:`, err?.message || err);
+      // Ultra-Fast Multi-Model Parallel Racing Engine:
+      // Fires concurrent requests across multiple Gemini models simultaneously.
+      // Promise.any returns the fastest response the exact millisecond it is ready.
+      const modelPromises = uniqueModels.map(async (mName) => {
+        const model = genAI.getGenerativeModel({
+          model: mName,
+          generationConfig: {
+            maxOutputTokens: 2048,
+            temperature: 0.7,
+          },
+        });
+        const chatSession = model.startChat({ history });
+        const result = await chatSession.sendMessage(
+          currentParts.length === 1 ? currentParts[0] : currentParts
+        );
+        const text = result.response.text();
+        if (!text || !text.trim()) {
+          throw new Error(`Empty response from ${mName}`);
         }
-      }
+        return { model: mName, text };
+      });
 
-      if (!replyText) {
-        throw lastError || new Error("Failed to receive response from Gemini");
+      let replyText = "";
+      try {
+        const winner = await Promise.any(modelPromises);
+        replyText = winner.text;
+        console.log(`[Gemini Race Engine] Winner: ${winner.model} delivered fastest response.`);
+      } catch (raceErr: any) {
+        console.error("[Gemini Race Engine] All models failed in race:", raceErr?.errors || raceErr);
+        throw new Error("Failed to receive response from Gemini models");
       }
 
       // Save messages in conversation and user profile concurrently
