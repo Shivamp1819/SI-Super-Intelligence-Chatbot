@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import TypingAnim from "../components/typer/TypingAnim";
 import Footer from "../components/footer/Footer";
 import DynamicRobot from "../components/robot/DynamicRobot";
+import LiveWorkspacePreview from "../components/home/LiveWorkspacePreview";
 import { FiZap, FiShield, FiFileText, FiArrowRight, FiCpu } from "react-icons/fi";
 
 const CAPABILITIES = [
@@ -237,18 +238,6 @@ const Home = () => {
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 } }}>
         <Box sx={{ textAlign: "center", mb: { xs: 4, md: 6 } }}>
           <Typography
-            sx={{
-              color: "#00fffc",
-              fontSize: "13px",
-              fontWeight: 800,
-              textTransform: "uppercase",
-              letterSpacing: 1.5,
-              mb: 1,
-            }}
-          >
-            Engineered for Speed
-          </Typography>
-          <Typography
             variant="h3"
             sx={{
               color: "white",
@@ -354,23 +343,7 @@ const Home = () => {
             px: { xs: 1, sm: 2 },
           }}
         >
-          <Box
-            component="img"
-            src="chat.png"
-            alt="SI Super Intelligence Workspace Preview"
-            sx={{
-              width: "100%",
-              maxWidth: "1000px",
-              borderRadius: { xs: 3, md: 4 },
-              border: "1px solid rgba(0, 255, 252, 0.25)",
-              boxShadow: "0 0 60px rgba(0, 255, 252, 0.25)",
-              transition: "transform 0.4s ease, box-shadow 0.4s ease",
-              ":hover": {
-                transform: "scale(1.01)",
-                boxShadow: "0 0 90px rgba(0, 255, 252, 0.4)",
-              },
-            }}
-          />
+          <LiveWorkspacePreview />
         </Box>
       </Container>
 
