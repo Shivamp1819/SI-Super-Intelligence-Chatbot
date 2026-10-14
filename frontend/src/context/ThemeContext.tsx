@@ -74,7 +74,7 @@ export const ThemeContextProvider: React.FC<{ children: ReactNode }> = ({
           contrastText: isDarkMode ? "#001a1c" : "#ffffff",
         },
         background: {
-          default: isDarkMode ? "#05101c" : "#f6f9fc",
+          default: isDarkMode ? "#05101c" : "#e8eff8",
           paper: isDarkMode ? "#111d27" : "#ffffff",
         },
         text: {

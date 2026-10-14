@@ -1008,7 +1008,9 @@ const ChatItem = ({
             rowGap: 0.6,
             mt: 1.2,
             pt: 0.8,
-            borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+            borderTop: isDark
+              ? "1px solid rgba(255, 255, 255, 0.06)"
+              : "1px solid rgba(15, 23, 42, 0.08)",
           }}
         >
           {/* Copy Button */}
@@ -1017,11 +1019,13 @@ const ChatItem = ({
               size="small"
               onClick={handleCopy}
               sx={{
-                color: copied ? "#00fffc" : "rgba(255, 255, 255, 0.55)",
+                color: copied
+                  ? isDark ? "#00fffc" : "#0284c7"
+                  : isDark ? "rgba(255, 255, 255, 0.55)" : "#64748b",
                 p: 0.5,
                 ":hover": {
-                  color: "#00fffc",
-                  bgcolor: "rgba(0, 255, 252, 0.1)",
+                  color: isDark ? "#00fffc" : "#0284c7",
+                  bgcolor: isDark ? "rgba(0, 255, 252, 0.1)" : "rgba(2, 132, 199, 0.1)",
                 },
               }}
             >
@@ -1041,16 +1045,18 @@ const ChatItem = ({
               size="small"
               onClick={handleSpeech}
               sx={{
-                color: isSpeaking ? "#00fffc" : "rgba(255, 255, 255, 0.55)",
+                color: isSpeaking
+                  ? isDark ? "#00fffc" : "#0284c7"
+                  : isDark ? "rgba(255, 255, 255, 0.55)" : "#64748b",
                 p: 0.5,
                 ":hover": {
-                  color: "#00fffc",
-                  bgcolor: "rgba(0, 255, 252, 0.1)",
+                  color: isDark ? "#00fffc" : "#0284c7",
+                  bgcolor: isDark ? "rgba(0, 255, 252, 0.1)" : "rgba(2, 132, 199, 0.1)",
                 },
               }}
             >
               {isSpeaking ? (
-                <FiVolumeX size={15} style={{ color: "#00fffc" }} />
+                <FiVolumeX size={15} style={{ color: isDark ? "#00fffc" : "#0284c7" }} />
               ) : (
                 <FiVolume2 size={15} />
               )}
@@ -1063,11 +1069,13 @@ const ChatItem = ({
               size="small"
               onClick={handleLike}
               sx={{
-                color: liked === true ? "#00fffc" : "rgba(255, 255, 255, 0.55)",
+                color: liked === true
+                  ? isDark ? "#00fffc" : "#0284c7"
+                  : isDark ? "rgba(255, 255, 255, 0.55)" : "#64748b",
                 p: 0.5,
                 ":hover": {
-                  color: "#00fffc",
-                  bgcolor: "rgba(0, 255, 252, 0.1)",
+                  color: isDark ? "#00fffc" : "#0284c7",
+                  bgcolor: isDark ? "rgba(0, 255, 252, 0.1)" : "rgba(2, 132, 199, 0.1)",
                 },
               }}
             >
@@ -1081,7 +1089,9 @@ const ChatItem = ({
               size="small"
               onClick={handleDislike}
               sx={{
-                color: liked === false ? "#ff5252" : "rgba(255, 255, 255, 0.55)",
+                color: liked === false
+                  ? "#ff5252"
+                  : isDark ? "rgba(255, 255, 255, 0.55)" : "#64748b",
                 p: 0.5,
                 ":hover": {
                   color: "#ff5252",
@@ -1099,12 +1109,12 @@ const ChatItem = ({
               size="small"
               onClick={handleShare}
               sx={{
-                color: "rgba(255, 255, 255, 0.55)",
+                color: isDark ? "rgba(255, 255, 255, 0.55)" : "#64748b",
                 p: 0.5,
                 transition: "all 0.2s ease",
                 ":hover": {
-                  color: "#00fffc",
-                  bgcolor: "rgba(0, 255, 252, 0.1)",
+                  color: isDark ? "#00fffc" : "#0284c7",
+                  bgcolor: isDark ? "rgba(0, 255, 252, 0.1)" : "rgba(2, 132, 199, 0.1)",
                 },
               }}
             >
@@ -1127,19 +1137,31 @@ const ChatItem = ({
                 px: 1.1,
                 py: 0.35,
                 borderRadius: "6px",
-                border: "1px solid rgba(255, 255, 255, 0.16)",
-                bgcolor: "rgba(255, 255, 255, 0.05)",
-                color: "rgba(255, 255, 255, 0.78)",
+                border: isDark
+                  ? "1px solid rgba(255, 255, 255, 0.16)"
+                  : "1px solid rgba(15, 23, 42, 0.15)",
+                bgcolor: isDark
+                  ? "rgba(255, 255, 255, 0.05)"
+                  : "rgba(15, 23, 42, 0.04)",
+                color: isDark
+                  ? "rgba(255, 255, 255, 0.78)"
+                  : "#334155",
                 fontSize: "12px",
-                fontWeight: 500,
+                fontWeight: 600,
                 cursor: isExportingPdf ? "not-allowed" : "pointer",
                 transition: "all 0.2s ease-in-out",
                 outline: "none",
                 ":hover": {
-                  color: "#00fffc",
-                  borderColor: "rgba(0, 255, 252, 0.45)",
-                  bgcolor: "rgba(0, 255, 252, 0.1)",
-                  boxShadow: "0 0 10px rgba(0, 255, 252, 0.15)",
+                  color: isDark ? "#00fffc" : "#0284c7",
+                  borderColor: isDark
+                    ? "rgba(0, 255, 252, 0.45)"
+                    : "rgba(2, 132, 199, 0.45)",
+                  bgcolor: isDark
+                    ? "rgba(0, 255, 252, 0.1)"
+                    : "rgba(2, 132, 199, 0.1)",
+                  boxShadow: isDark
+                    ? "0 0 10px rgba(0, 255, 252, 0.15)"
+                    : "0 2px 8px rgba(2, 132, 199, 0.15)",
                   transform: "translateY(-1px)",
                 },
                 ":active": {
@@ -1148,7 +1170,7 @@ const ChatItem = ({
               }}
             >
               {isExportingPdf ? (
-                <CircularProgress size={12} sx={{ color: "#00fffc" }} />
+                <CircularProgress size={12} sx={{ color: isDark ? "#00fffc" : "#0284c7" }} />
               ) : (
                 <AiOutlineFilePdf size={14} style={{ color: "#ff5252" }} />
               )}
@@ -1156,7 +1178,7 @@ const ChatItem = ({
                 component="span"
                 sx={{
                   fontSize: "12px",
-                  fontWeight: 500,
+                  fontWeight: 600,
                   lineHeight: 1,
                   letterSpacing: "0.2px",
                 }}

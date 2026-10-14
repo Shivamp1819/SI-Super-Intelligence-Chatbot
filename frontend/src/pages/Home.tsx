@@ -40,7 +40,7 @@ const Home = () => {
       minHeight={"100%"}
       sx={{
         overflowX: "hidden",
-        bgcolor: isDark ? "transparent" : "#f6f9fc",
+        bgcolor: isDark ? "transparent" : "#e8eff8",
         transition: "background-color 0.3s ease",
       }}
     >

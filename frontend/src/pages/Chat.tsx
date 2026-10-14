@@ -714,22 +714,26 @@ const Chat = () => {
             sx={{
               py: 1.1,
               px: 2,
-              color: "white",
-              bgcolor: "rgba(0, 255, 252, 0.12)",
-              border: "1px solid rgba(0, 255, 252, 0.35)",
+              color: "#ffffff",
+              bgcolor: isDark ? "rgba(0, 255, 252, 0.12)" : "#0284c7",
+              border: isDark ? "1px solid rgba(0, 255, 252, 0.35)" : "1px solid #0284c7",
               borderRadius: 3,
               fontWeight: 700,
               fontSize: "14px",
               textTransform: "none",
               justifyContent: "flex-start",
               gap: 1,
-              boxShadow: "0 2px 10px rgba(0, 255, 252, 0.15)",
+              boxShadow: isDark
+                ? "0 2px 10px rgba(0, 255, 252, 0.15)"
+                : "0 4px 14px rgba(2, 132, 199, 0.32)",
               transition: "all 0.25s ease",
               ":hover": {
-                bgcolor: "rgba(0, 255, 252, 0.22)",
-                borderColor: "#00fffc",
+                bgcolor: isDark ? "rgba(0, 255, 252, 0.22)" : "#0369a1",
+                borderColor: isDark ? "#00fffc" : "#0369a1",
                 transform: "translateY(-1px)",
-                boxShadow: "0 4px 16px rgba(0, 255, 252, 0.25)",
+                boxShadow: isDark
+                  ? "0 4px 16px rgba(0, 255, 252, 0.25)"
+                  : "0 6px 18px rgba(2, 132, 199, 0.45)",
               },
             }}
           >
@@ -746,16 +750,18 @@ const Chat = () => {
                 }
               }}
               sx={{
-                color: "rgba(255, 255, 255, 0.7)",
+                color: isDark ? "rgba(255, 255, 255, 0.7)" : "#475569",
                 p: 1,
                 borderRadius: 2.5,
-                bgcolor: "rgba(255, 255, 255, 0.05)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
+                bgcolor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(15, 23, 42, 0.05)",
+                border: isDark
+                  ? "1px solid rgba(255, 255, 255, 0.08)"
+                  : "1px solid rgba(15, 23, 42, 0.12)",
                 flexShrink: 0,
                 ":hover": {
-                  color: "#00fffc",
-                  bgcolor: "rgba(0, 255, 252, 0.12)",
-                  borderColor: "rgba(0, 255, 252, 0.3)",
+                  color: isDark ? "#00fffc" : "#0284c7",
+                  bgcolor: isDark ? "rgba(0, 255, 252, 0.12)" : "rgba(2, 132, 199, 0.1)",
+                  borderColor: isDark ? "rgba(0, 255, 252, 0.3)" : "rgba(2, 132, 199, 0.3)",
                 },
               }}
             >
@@ -777,7 +783,7 @@ const Chat = () => {
           <Typography
             sx={{
               fontSize: "11px",
-              color: "rgba(255, 255, 255, 0.6)",
+              color: isDark ? "rgba(255, 255, 255, 0.6)" : "#64748b",
               textTransform: "uppercase",
               letterSpacing: 1,
               fontWeight: 700,
@@ -794,13 +800,13 @@ const Chat = () => {
                   onClick={() => scrollToTopSidebar(isMobileDrawer)}
                   sx={{
                     p: 0.4,
-                    color: "rgba(255, 255, 255, 0.6)",
-                    bgcolor: "rgba(255, 255, 255, 0.05)",
+                    color: isDark ? "rgba(255, 255, 255, 0.6)" : "#64748b",
+                    bgcolor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(15, 23, 42, 0.05)",
                     borderRadius: "6px",
                     transition: "all 0.2s ease",
                     ":hover": {
-                      color: "#00fffc",
-                      bgcolor: "rgba(0, 255, 252, 0.15)",
+                      color: isDark ? "#00fffc" : "#0284c7",
+                      bgcolor: isDark ? "rgba(0, 255, 252, 0.15)" : "rgba(2, 132, 199, 0.12)",
                     },
                   }}
                 >
@@ -813,13 +819,13 @@ const Chat = () => {
                   onClick={() => scrollToBottomSidebar(isMobileDrawer)}
                   sx={{
                     p: 0.4,
-                    color: "rgba(255, 255, 255, 0.6)",
-                    bgcolor: "rgba(255, 255, 255, 0.05)",
+                    color: isDark ? "rgba(255, 255, 255, 0.6)" : "#64748b",
+                    bgcolor: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(15, 23, 42, 0.05)",
                     borderRadius: "6px",
                     transition: "all 0.2s ease",
                     ":hover": {
-                      color: "#00fffc",
-                      bgcolor: "rgba(0, 255, 252, 0.15)",
+                      color: isDark ? "#00fffc" : "#0284c7",
+                      bgcolor: isDark ? "rgba(0, 255, 252, 0.15)" : "rgba(2, 132, 199, 0.12)",
                     },
                   }}
                 >
@@ -856,20 +862,24 @@ const Chat = () => {
                 width: "6px",
               },
               "::-webkit-scrollbar-track": {
-                bgcolor: "rgba(255, 255, 255, 0.04)",
+                bgcolor: isDark ? "rgba(255, 255, 255, 0.04)" : "rgba(15, 23, 42, 0.05)",
                 borderRadius: "8px",
               },
               "::-webkit-scrollbar-thumb": {
-                bgcolor: "rgba(0, 255, 252, 0.4)",
+                bgcolor: isDark ? "rgba(0, 255, 252, 0.4)" : "rgba(2, 132, 199, 0.4)",
                 borderRadius: "8px",
                 transition: "all 0.2s ease",
                 ":hover": {
-                  bgcolor: "#00fffc",
-                  boxShadow: "0 0 10px rgba(0, 255, 252, 0.7)",
+                  bgcolor: isDark ? "#00fffc" : "#0284c7",
+                  boxShadow: isDark
+                    ? "0 0 10px rgba(0, 255, 252, 0.7)"
+                    : "0 0 10px rgba(2, 132, 199, 0.5)",
                 },
               },
               scrollbarWidth: "thin",
-              scrollbarColor: "rgba(0, 255, 252, 0.4) rgba(255, 255, 255, 0.04)",
+              scrollbarColor: isDark
+                ? "rgba(0, 255, 252, 0.4) rgba(255, 255, 255, 0.04)"
+                : "rgba(2, 132, 199, 0.4) rgba(15, 23, 42, 0.05)",
             }}
           >
             {conversations.length === 0 ? (
@@ -878,7 +888,7 @@ const Chat = () => {
                   textAlign: "center",
                   py: 4,
                   px: 2,
-                  color: "rgba(255, 255, 255, 0.4)",
+                  color: isDark ? "rgba(255, 255, 255, 0.4)" : "#64748b",
                 }}
               >
                 <FiMessageSquare
@@ -897,7 +907,6 @@ const Chat = () => {
                 const isActive = conv._id === currentConversationId;
                 const displayTopic = formatDisplayTopic(conv.topic);
 
-
                 return (
                   <Box
                     key={conv._id}
@@ -914,23 +923,39 @@ const Chat = () => {
                       py: 1.1,
                       borderRadius: 2.5,
                       bgcolor: isActive
-                        ? "rgba(0, 255, 252, 0.12)"
-                        : "rgba(255, 255, 255, 0.03)",
+                        ? isDark
+                          ? "rgba(0, 255, 252, 0.12)"
+                          : "rgba(2, 132, 199, 0.12)"
+                        : isDark
+                        ? "rgba(255, 255, 255, 0.03)"
+                        : "#f8fafc",
                       border: "1px solid",
                       borderColor: isActive
-                        ? "rgba(0, 255, 252, 0.45)"
-                        : "rgba(255, 255, 255, 0.06)",
+                        ? isDark
+                          ? "rgba(0, 255, 252, 0.45)"
+                          : "#0284c7"
+                        : isDark
+                        ? "rgba(255, 255, 255, 0.06)"
+                        : "rgba(15, 23, 42, 0.08)",
                       boxShadow: isActive
-                        ? "0 0 12px rgba(0, 255, 252, 0.15)"
+                        ? isDark
+                          ? "0 0 12px rgba(0, 255, 252, 0.15)"
+                          : "0 2px 8px rgba(2, 132, 199, 0.15)"
                         : "none",
                       cursor: "pointer",
                       transition: "all 0.2s ease",
                       position: "relative",
                       ":hover": {
                         bgcolor: isActive
-                          ? "rgba(0, 255, 252, 0.16)"
-                          : "rgba(0, 255, 252, 0.08)",
-                        borderColor: "rgba(0, 255, 252, 0.3)",
+                          ? isDark
+                            ? "rgba(0, 255, 252, 0.16)"
+                            : "rgba(2, 132, 199, 0.18)"
+                          : isDark
+                          ? "rgba(0, 255, 252, 0.08)"
+                          : "rgba(2, 132, 199, 0.08)",
+                        borderColor: isDark
+                          ? "rgba(0, 255, 252, 0.3)"
+                          : "rgba(2, 132, 199, 0.35)",
                         transform: "translateX(3px)",
                         "& .delete-btn": {
                           opacity: 1,
@@ -950,7 +975,13 @@ const Chat = () => {
                       <FiMessageSquare
                         size={15}
                         style={{
-                          color: isActive ? "#00fffc" : "rgba(255,255,255,0.6)",
+                          color: isActive
+                            ? isDark
+                              ? "#00fffc"
+                              : "#0284c7"
+                            : isDark
+                            ? "rgba(255,255,255,0.6)"
+                            : "#64748b",
                           flexShrink: 0,
                         }}
                       />
@@ -958,8 +989,14 @@ const Chat = () => {
                         <Typography
                           sx={{
                             fontSize: "13px",
-                            fontWeight: isActive ? 700 : 500,
-                            color: isActive ? "#00fffc" : "white",
+                            fontWeight: isActive ? 700 : 600,
+                            color: isActive
+                              ? isDark
+                                ? "#00fffc"
+                                : "#0284c7"
+                              : isDark
+                              ? "white"
+                              : "#0f172a",
                             whiteSpace: "nowrap",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
@@ -972,7 +1009,9 @@ const Chat = () => {
                           <Typography
                             sx={{
                               fontSize: "10.5px",
-                              color: "rgba(255, 255, 255, 0.4)",
+                              color: isDark
+                                ? "rgba(255, 255, 255, 0.4)"
+                                : "#64748b",
                               mt: 0.2,
                             }}
                           >
@@ -989,7 +1028,7 @@ const Chat = () => {
                         className="delete-btn"
                         onClick={(e) => handleDeleteConversation(conv._id, e)}
                         sx={{
-                          color: "rgba(255, 255, 255, 0.4)",
+                          color: isDark ? "rgba(255, 255, 255, 0.4)" : "#94a3b8",
                           opacity: isActive ? 0.8 : 0.3,
                           p: 0.5,
                           transition: "all 0.2s ease",
@@ -1019,10 +1058,12 @@ const Chat = () => {
                   bottom: 10,
                   left: "50%",
                   transform: "translateX(-50%)",
-                  bgcolor: "rgba(13, 22, 31, 0.95)",
+                  bgcolor: isDark ? "rgba(13, 22, 31, 0.95)" : "#ffffff",
                   backdropFilter: "blur(8px)",
-                  border: "1px solid rgba(0, 255, 252, 0.6)",
-                  color: "#00fffc",
+                  border: isDark
+                    ? "1px solid rgba(0, 255, 252, 0.6)"
+                    : "1.5px solid rgba(2, 132, 199, 0.5)",
+                  color: isDark ? "#00fffc" : "#0284c7",
                   width: 32,
                   height: 32,
                   borderRadius: "50%",
@@ -1030,14 +1071,17 @@ const Chat = () => {
                   alignItems: "center",
                   justifyContent: "center",
                   p: 0,
-                  boxShadow:
-                    "0 4px 16px rgba(0, 0, 0, 0.6), 0 0 10px rgba(0, 255, 252, 0.25)",
+                  boxShadow: isDark
+                    ? "0 4px 16px rgba(0, 0, 0, 0.6), 0 0 10px rgba(0, 255, 252, 0.25)"
+                    : "0 4px 16px rgba(15, 23, 42, 0.12), 0 0 10px rgba(2, 132, 199, 0.2)",
                   transition: "all 0.25s ease",
                   ":hover": {
-                    bgcolor: "rgba(0, 255, 252, 0.22)",
+                    bgcolor: isDark ? "rgba(0, 255, 252, 0.22)" : "rgba(2, 132, 199, 0.12)",
                     transform: "translateX(-50%) translateY(-2px)",
-                    boxShadow: "0 6px 20px rgba(0, 255, 252, 0.5)",
-                    borderColor: "#00fffc",
+                    boxShadow: isDark
+                      ? "0 6px 20px rgba(0, 255, 252, 0.5)"
+                      : "0 6px 20px rgba(2, 132, 199, 0.4)",
+                    borderColor: isDark ? "#00fffc" : "#0284c7",
                   },
                   zIndex: 10,
                 }}
@@ -1083,7 +1127,9 @@ const Chat = () => {
             alignItems: "center",
             justifyContent: "space-between",
             pt: 1.5,
-            borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+            borderTop: isDark
+              ? "1px solid rgba(255, 255, 255, 0.1)"
+              : "1px solid rgba(15, 23, 42, 0.08)",
           }}
         >
           {/* User Info */}
@@ -1100,11 +1146,13 @@ const Chat = () => {
               sx={{
                 width: 36,
                 height: 36,
-                bgcolor: "#00fffc",
-                color: "#001a1c",
+                bgcolor: isDark ? "#00fffc" : "#0284c7",
+                color: isDark ? "#001a1c" : "#ffffff",
                 fontWeight: 800,
                 fontSize: "13px",
-                boxShadow: "0 0 10px rgba(0, 255, 252, 0.3)",
+                boxShadow: isDark
+                  ? "0 0 10px rgba(0, 255, 252, 0.3)"
+                  : "0 2px 8px rgba(2, 132, 199, 0.3)",
                 flexShrink: 0,
               }}
             >
@@ -1115,7 +1163,7 @@ const Chat = () => {
                 sx={{
                   fontSize: "13px",
                   fontWeight: 700,
-                  color: "white",
+                  color: isDark ? "white" : "#0f172a",
                   lineHeight: 1.2,
                   whiteSpace: "nowrap",
                   textOverflow: "ellipsis",
@@ -1127,7 +1175,7 @@ const Chat = () => {
               <Typography
                 sx={{
                   fontSize: "11px",
-                  color: "rgba(255, 255, 255, 0.5)",
+                  color: isDark ? "rgba(255, 255, 255, 0.5)" : "#475569",
                   whiteSpace: "nowrap",
                   textOverflow: "ellipsis",
                   overflow: "hidden",
@@ -1144,8 +1192,8 @@ const Chat = () => {
               onClick={auth?.logout}
               sx={{
                 color: "#ff5252",
-                bgcolor: "rgba(255, 82, 82, 0.08)",
-                border: "1px solid rgba(255, 82, 82, 0.25)",
+                bgcolor: isDark ? "rgba(255, 82, 82, 0.08)" : "rgba(239, 68, 68, 0.08)",
+                border: isDark ? "1px solid rgba(255, 82, 82, 0.25)" : "1px solid rgba(239, 68, 68, 0.2)",
                 borderRadius: 2,
                 p: 0.9,
                 ml: 1,
@@ -1176,6 +1224,7 @@ const Chat = () => {
         gap: { xs: 1, md: 2 },
         boxSizing: "border-box",
         alignItems: "stretch",
+        bgcolor: isDark ? "transparent" : "#e8eff8",
       }}
     >
       {/* Mobile Slide-Over Drawer for Previous Chats */}
@@ -1189,9 +1238,11 @@ const Chat = () => {
             width: { xs: "86vw", sm: "330px" },
             maxWidth: "340px",
             height: "100%",
-            bgcolor: "#0d161f",
+            bgcolor: isDark ? "#0d161f" : "#ffffff",
             backgroundImage: "none",
-            borderRight: "1px solid rgba(0, 255, 252, 0.25)",
+            borderRight: isDark
+              ? "1px solid rgba(0, 255, 252, 0.25)"
+              : "1px solid rgba(15, 23, 42, 0.1)",
             p: 1.5,
             boxSizing: "border-box",
           },
@@ -1243,7 +1294,9 @@ const Chat = () => {
             justifyContent: "space-between",
             pb: 1.2,
             mb: 1.2,
-            borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+            borderBottom: isDark
+              ? "1px solid rgba(255, 255, 255, 0.06)"
+              : "1px solid rgba(15, 23, 42, 0.08)",
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
@@ -1253,12 +1306,16 @@ const Chat = () => {
                 onClick={() => setIsMobileDrawerOpen(true)}
                 sx={{
                   display: { md: "none", xs: "inline-flex" },
-                  color: "#00fffc",
-                  bgcolor: "rgba(0, 255, 252, 0.1)",
-                  border: "1px solid rgba(0, 255, 252, 0.3)",
+                  color: isDark ? "#00fffc" : "#0284c7",
+                  bgcolor: isDark ? "rgba(0, 255, 252, 0.1)" : "rgba(2, 132, 199, 0.1)",
+                  border: isDark
+                    ? "1px solid rgba(0, 255, 252, 0.3)"
+                    : "1px solid rgba(2, 132, 199, 0.3)",
                   p: 0.8,
                   borderRadius: 2,
-                  ":hover": { bgcolor: "rgba(0, 255, 252, 0.2)" },
+                  ":hover": {
+                    bgcolor: isDark ? "rgba(0, 255, 252, 0.2)" : "rgba(2, 132, 199, 0.18)",
+                  },
                 }}
               >
                 <FiMenu size={18} />
@@ -1272,11 +1329,15 @@ const Chat = () => {
                   onClick={() => setIsSidebarOpen(true)}
                   sx={{
                     display: { xs: "none", md: "inline-flex" },
-                    color: "#00fffc",
-                    bgcolor: "rgba(0, 255, 252, 0.08)",
-                    border: "1px solid rgba(0, 255, 252, 0.25)",
+                    color: isDark ? "#00fffc" : "#0284c7",
+                    bgcolor: isDark ? "rgba(0, 255, 252, 0.08)" : "rgba(2, 132, 199, 0.08)",
+                    border: isDark
+                      ? "1px solid rgba(0, 255, 252, 0.25)"
+                      : "1px solid rgba(2, 132, 199, 0.25)",
                     p: 0.8,
-                    ":hover": { bgcolor: "rgba(0, 255, 252, 0.18)" },
+                    ":hover": {
+                      bgcolor: isDark ? "rgba(0, 255, 252, 0.18)" : "rgba(2, 132, 199, 0.16)",
+                    },
                   }}
                 >
                   <FiChevronRight size={18} />
@@ -1289,9 +1350,9 @@ const Chat = () => {
               <Chip
                 icon={
                   currentConversationId ? (
-                    <FiMessageSquare size={13} color="#00fffc" />
+                    <FiMessageSquare size={13} color={isDark ? "#00fffc" : "#0284c7"} />
                   ) : (
-                    <FiZap size={13} color="#00fffc" />
+                    <FiZap size={13} color={isDark ? "#00fffc" : "#0284c7"} />
                   )
                 }
                 label={
@@ -1299,12 +1360,13 @@ const Chat = () => {
                     ? `Topic: ${formatDisplayTopic(currentTopic)}`
                     : "Fresh New Chat"
                 }
-
                 sx={{
-                  bgcolor: "rgba(0, 255, 252, 0.08)",
-                  border: "1px solid rgba(0, 255, 252, 0.25)",
-                  color: "white",
-                  fontWeight: 600,
+                  bgcolor: isDark ? "rgba(0, 255, 252, 0.08)" : "rgba(2, 132, 199, 0.1)",
+                  border: isDark
+                    ? "1px solid rgba(0, 255, 252, 0.25)"
+                    : "1.5px solid rgba(2, 132, 199, 0.4)",
+                  color: isDark ? "white" : "#0284c7",
+                  fontWeight: 700,
                   fontSize: "12.5px",
                   maxWidth: { md: "500px", xs: "220px" },
                   "& .MuiChip-label": {
@@ -1324,8 +1386,8 @@ const Chat = () => {
             width: "100%",
             flex: 1,
             borderRadius: 3,
-            bgcolor: isDark ? "rgba(10, 18, 26, 0.4)" : "#f8fafc",
-            border: isDark ? "1px solid rgba(255, 255, 255, 0.05)" : "1px solid rgba(15, 23, 42, 0.06)",
+            bgcolor: isDark ? "rgba(10, 18, 26, 0.4)" : "#edf2f7",
+            border: isDark ? "1px solid rgba(255, 255, 255, 0.05)" : "1px solid rgba(15, 23, 42, 0.08)",
             boxSizing: "border-box",
             display: "flex",
             flexDirection: "column",
@@ -1348,8 +1410,8 @@ const Chat = () => {
                 gap: 2,
               }}
             >
-              <CircularProgress size={32} sx={{ color: "#00fffc" }} />
-              <Typography sx={{ color: "rgba(255,255,255,0.7)", fontSize: "14px" }}>
+              <CircularProgress size={32} sx={{ color: isDark ? "#00fffc" : "#0284c7" }} />
+              <Typography sx={{ color: isDark ? "rgba(255,255,255,0.7)" : "#475569", fontSize: "14px" }}>
                 Opening previous chat...
               </Typography>
             </Box>
@@ -1372,13 +1434,17 @@ const Chat = () => {
                   width: 72,
                   height: 72,
                   borderRadius: "50%",
-                  bgcolor: "rgba(0, 255, 252, 0.08)",
-                  border: "2px solid rgba(0, 255, 252, 0.35)",
+                  bgcolor: isDark ? "rgba(0, 255, 252, 0.08)" : "rgba(2, 132, 199, 0.08)",
+                  border: isDark
+                    ? "2px solid rgba(0, 255, 252, 0.35)"
+                    : "2px solid rgba(2, 132, 199, 0.35)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   mb: 2.5,
-                  boxShadow: "0 0 28px rgba(0, 255, 252, 0.2)",
+                  boxShadow: isDark
+                    ? "0 0 28px rgba(0, 255, 252, 0.2)"
+                    : "0 4px 20px rgba(2, 132, 199, 0.2)",
                 }}
               >
                 <img
@@ -1388,7 +1454,9 @@ const Chat = () => {
                   height="44px"
                   style={{
                     borderRadius: "50%",
-                    filter: "drop-shadow(0 0 10px rgba(0, 255, 252, 0.6))",
+                    filter: isDark
+                      ? "drop-shadow(0 0 10px rgba(0, 255, 252, 0.6))"
+                      : "drop-shadow(0 2px 10px rgba(2, 132, 199, 0.5))",
                   }}
                 />
               </Box>
@@ -1397,7 +1465,7 @@ const Chat = () => {
                 sx={{
                   fontSize: { md: "24px", xs: "20px" },
                   fontWeight: 800,
-                  color: "white",
+                  color: isDark ? "white" : "#0f172a",
                   mb: 1,
                   letterSpacing: 0.5,
                 }}
@@ -1407,7 +1475,7 @@ const Chat = () => {
               <Typography
                 sx={{
                   fontSize: { md: "14.5px", xs: "13px" },
-                  color: "rgba(255, 255, 255, 0.65)",
+                  color: isDark ? "rgba(255, 255, 255, 0.65)" : "#475569",
                   maxWidth: "520px",
                   lineHeight: 1.6,
                   mb: 4,
@@ -1441,17 +1509,26 @@ const Chat = () => {
                       alignItems: "flex-start",
                       gap: 1.5,
                       p: 2,
-                      bgcolor: "rgba(255, 255, 255, 0.03)",
-                      border: "1px solid rgba(255, 255, 255, 0.07)",
+                      bgcolor: isDark ? "rgba(255, 255, 255, 0.03)" : "#ffffff",
+                      border: isDark
+                        ? "1px solid rgba(255, 255, 255, 0.07)"
+                        : "1px solid rgba(15, 23, 42, 0.08)",
                       borderRadius: 3,
+                      boxShadow: isDark ? "none" : "0 2px 8px rgba(15, 23, 42, 0.04)",
                       cursor: "pointer",
                       textAlign: "left",
                       transition: "all 0.25s ease",
                       ":hover": {
-                        bgcolor: "rgba(0, 255, 252, 0.08)",
-                        borderColor: "rgba(0, 255, 252, 0.35)",
+                        bgcolor: isDark
+                          ? "rgba(0, 255, 252, 0.08)"
+                          : "rgba(2, 132, 199, 0.06)",
+                        borderColor: isDark
+                          ? "rgba(0, 255, 252, 0.35)"
+                          : "rgba(2, 132, 199, 0.35)",
                         transform: "translateY(-2px)",
-                        boxShadow: "0 4px 16px rgba(0, 0, 0, 0.3)",
+                        boxShadow: isDark
+                          ? "0 4px 16px rgba(0, 0, 0, 0.3)"
+                          : "0 4px 16px rgba(2, 132, 199, 0.12)",
                       },
                     }}
                   >
@@ -1461,7 +1538,7 @@ const Chat = () => {
                         sx={{
                           fontSize: "13px",
                           fontWeight: 700,
-                          color: "white",
+                          color: isDark ? "white" : "#0f172a",
                           mb: 0.4,
                         }}
                       >
@@ -1470,7 +1547,7 @@ const Chat = () => {
                       <Typography
                         sx={{
                           fontSize: "12px",
-                          color: "rgba(255, 255, 255, 0.55)",
+                          color: isDark ? "rgba(255, 255, 255, 0.55)" : "#64748b",
                           lineHeight: 1.4,
                         }}
                       >
@@ -1501,13 +1578,15 @@ const Chat = () => {
                 px: 2,
                 py: 1.2,
                 my: 0.8,
-                bgcolor: "rgba(17, 29, 39, 0.7)",
+                bgcolor: isDark ? "rgba(17, 29, 39, 0.7)" : "#ffffff",
+                border: isDark ? "none" : "1px solid rgba(2, 132, 199, 0.25)",
+                boxShadow: isDark ? "none" : "0 2px 10px rgba(2, 132, 199, 0.1)",
                 borderRadius: 2,
                 width: "fit-content",
               }}
             >
-              <CircularProgress size={16} sx={{ color: "#00fffc" }} />
-              <Typography sx={{ color: "#00fffc", fontSize: "14px" }}>
+              <CircularProgress size={16} sx={{ color: isDark ? "#00fffc" : "#0284c7" }} />
+              <Typography sx={{ color: isDark ? "#00fffc" : "#0284c7", fontSize: "14px", fontWeight: 600 }}>
                 SI Super Intelligence is analyzing and typing...
               </Typography>
             </Box>
@@ -1524,12 +1603,16 @@ const Chat = () => {
           sx={{
             width: "100%",
             borderRadius: 3,
-            backgroundColor: isDark ? "rgb(13,22,31)" : "#f1f5f9",
+            backgroundColor: isDark ? "rgb(13,22,31)" : "#ffffff",
             display: "flex",
             flexDirection: "column",
             mt: 1.5,
-            border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(2, 132, 199, 0.2)",
-            boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.3)" : "0 2px 10px rgba(15, 23, 42, 0.05)",
+            border: isDark
+              ? "1px solid rgba(255,255,255,0.08)"
+              : "1.5px solid rgba(2, 132, 199, 0.35)",
+            boxShadow: isDark
+              ? "0 4px 20px rgba(0,0,0,0.3)"
+              : "0 4px 16px rgba(2, 132, 199, 0.08)",
             transition: "all 0.3s ease",
           }}
         >
@@ -1541,9 +1624,11 @@ const Chat = () => {
                 alignItems: "center",
                 alignSelf: "flex-start",
                 gap: 1,
-                bgcolor: "rgba(0, 255, 252, 0.12)",
-                color: "#00fffc",
-                border: "1px solid rgba(0, 255, 252, 0.3)",
+                bgcolor: isDark ? "rgba(0, 255, 252, 0.12)" : "rgba(2, 132, 199, 0.1)",
+                color: isDark ? "#00fffc" : "#0284c7",
+                border: isDark
+                  ? "1px solid rgba(0, 255, 252, 0.3)"
+                  : "1px solid rgba(2, 132, 199, 0.3)",
                 px: 1.5,
                 py: 0.5,
                 borderRadius: 2,
@@ -1594,10 +1679,16 @@ const Chat = () => {
             <IconButton
               onClick={() => fileInputRef.current?.click()}
               sx={{
-                color: selectedFile ? "#00fffc" : "rgba(255,255,255,0.7)",
+                color: selectedFile
+                  ? isDark
+                    ? "#00fffc"
+                    : "#0284c7"
+                  : isDark
+                  ? "rgba(255,255,255,0.7)"
+                  : "#64748b",
                 mx: { xs: 0.2, sm: 0.8 },
                 p: { xs: 0.8, sm: 1 },
-                ":hover": { color: "#00fffc" },
+                ":hover": { color: isDark ? "#00fffc" : "#0284c7" },
               }}
               title="Upload PDF, Image, or ZIP"
             >
@@ -1634,6 +1725,10 @@ const Chat = () => {
                 color: isDark ? "white" : "#0f172a",
                 fontSize: "16px",
                 fontFamily: "inherit",
+                "&::placeholder": {
+                  color: isDark ? "rgba(255, 255, 255, 0.45)" : "#64748b",
+                  opacity: 1,
+                },
               }}
             />
 
@@ -1740,14 +1835,18 @@ const Chat = () => {
               onClick={() => handleSubmit()}
               disabled={isSending}
               sx={{
-                color: "#00fffc",
+                color: isDark ? "#00fffc" : "#0284c7",
                 mx: { xs: 0.2, sm: 0.8 },
                 p: { xs: 0.8, sm: 1 },
-                ":hover": { bgcolor: "rgba(0, 255, 252, 0.1)" },
+                ":hover": {
+                  bgcolor: isDark
+                    ? "rgba(0, 255, 252, 0.1)"
+                    : "rgba(2, 132, 199, 0.1)",
+                },
               }}
             >
               {isSending ? (
-                <CircularProgress size={18} sx={{ color: "#00fffc" }} />
+                <CircularProgress size={18} sx={{ color: isDark ? "#00fffc" : "#0284c7" }} />
               ) : (
                 <IoMdSend size={20} />
               )}

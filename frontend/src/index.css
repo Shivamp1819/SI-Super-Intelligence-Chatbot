@@ -10,13 +10,13 @@
 }
 
 body.light-mode {
-  --bg-page: #f6f9fc;
+  --bg-page: #e8eff8;
   --bg-card: #ffffff;
   --bg-input: #ffffff;
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --accent-color: #0284c7;
-  background: #f6f9fc !important;
+  background: #e8eff8 !important;
   color: #0f172a !important;
 }
 

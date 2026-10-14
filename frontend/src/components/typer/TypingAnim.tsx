@@ -1,6 +1,9 @@
 import { TypeAnimation } from "react-type-animation";
+import { useThemeMode } from "../../context/ThemeContext";
 
 const TypingAnim = () => {
+  const { isDark } = useThemeMode();
+
   return (
     <TypeAnimation
       sequence={[
@@ -14,11 +17,14 @@ const TypingAnim = () => {
       speed={50}
       style={{
         fontSize: "32px",
-        color: "white",
+        color: isDark ? "#ffffff" : "#0f172a",
         display: "inline-block",
-        textShadow: "1px 1px 20px #000",
-        fontWeight: 600,
+        textShadow: isDark
+          ? "1px 1px 20px rgba(0, 0, 0, 0.9)"
+          : "0 2px 14px rgba(2, 132, 199, 0.15)",
+        fontWeight: 700,
         textAlign: "center",
+        transition: "color 0.3s ease",
       }}
       repeat={Infinity}
     />
