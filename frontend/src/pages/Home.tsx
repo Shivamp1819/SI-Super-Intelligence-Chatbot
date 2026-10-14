@@ -114,8 +114,8 @@ const Home = () => {
               component={Link}
               to="/chat"
               sx={{
-                px: 3.5,
-                py: 1.3,
+                px: 3.8,
+                py: 1.4,
                 borderRadius: 2.5,
                 bgcolor: "#00fffc",
                 color: "#001a1c",
@@ -134,32 +134,6 @@ const Home = () => {
               endIcon={<FiArrowRight size={18} />}
             >
               Start Chatting Now
-            </Button>
-
-            <Button
-              component={Link}
-              to="/signup"
-              sx={{
-                px: 3,
-                py: 1.3,
-                borderRadius: 2.5,
-                bgcolor: "rgba(255, 255, 255, 0.05)",
-                color: "white",
-                fontWeight: 700,
-                fontSize: "15px",
-                textTransform: "none",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                backdropFilter: "blur(10px)",
-                transition: "all 0.25s ease",
-                ":hover": {
-                  bgcolor: "rgba(255, 255, 255, 0.12)",
-                  borderColor: "#00fffc",
-                  color: "#00fffc",
-                  transform: "translateY(-2px)",
-                },
-              }}
-            >
-              Sign Up Free
             </Button>
           </Box>
 
