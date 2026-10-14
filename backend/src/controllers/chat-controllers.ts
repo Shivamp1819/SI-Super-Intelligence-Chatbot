@@ -5,12 +5,11 @@ import { configureOpenAI } from "../config/openai-config.js";
 import { OpenAIApi, ChatCompletionRequestMessage } from "openai";
 import { configureGemini, getGeminiAPIKey } from "../config/gemini-config.js";
 import {
+  generateFallbackTopic,
   observeTopicFromQuestion,
   sanitizeDisplayTopic,
 } from "../utils/topic-observer.js";
 import JSZip from "jszip";
-
-
 
 interface UploadedFile {
   name: string;
@@ -59,15 +58,26 @@ export const generateChatCompletion = async (
 
     if (!conversation) {
       isNewSession = true;
-      const observedTopic = await observeTopicFromQuestion(
-        rawUserPrompt,
-        file?.name
-      );
+      // Instant Title Generation using local parser (0ms delay)
+      const instantTopic = generateFallbackTopic(rawUserPrompt, file?.name);
       conversation = new Conversation({
         user: user._id,
-        topic: observedTopic,
+        topic: instantTopic,
         messages: [],
       });
+
+      // Background AI topic refinement (completely non-blocking, zero wait for user)
+      if (rawUserPrompt.length > 3) {
+        observeTopicFromQuestion(rawUserPrompt, file?.name)
+          .then(async (aiTopic) => {
+            if (aiTopic && aiTopic !== "New Conversation" && conversation?._id) {
+              await Conversation.findByIdAndUpdate(conversation._id, {
+                topic: sanitizeDisplayTopic(aiTopic),
+              }).catch(() => {});
+            }
+          })
+          .catch(() => {});
+      }
     } else {
       const isGenericOrRawQuestion =
         !conversation.topic ||
@@ -80,30 +90,38 @@ export const generateChatCompletion = async (
         );
 
       if (isGenericOrRawQuestion) {
-        conversation.topic = await observeTopicFromQuestion(
-          rawUserPrompt,
-          file?.name
-        );
+        conversation.topic = generateFallbackTopic(rawUserPrompt, file?.name);
+        if (rawUserPrompt.length > 3) {
+          observeTopicFromQuestion(rawUserPrompt, file?.name)
+            .then(async (aiTopic) => {
+              if (aiTopic && aiTopic !== "New Conversation" && conversation?._id) {
+                await Conversation.findByIdAndUpdate(conversation._id, {
+                  topic: sanitizeDisplayTopic(aiTopic),
+                }).catch(() => {});
+              }
+            })
+            .catch(() => {});
+        }
       }
     }
 
     const geminiKey = getGeminiAPIKey();
     if (geminiKey) {
       const genAI = configureGemini();
+      // Fast, active models prioritized (gemini-3.1-flash-lite provides sub-second responses)
       const modelNames = [
         process.env.GEMINI_MODEL,
-        "gemini-2.0-flash",
-        "gemini-1.5-flash",
-        "gemini-1.5-pro",
+        "gemini-3.1-flash-lite",
         "gemini-3.5-flash-lite",
-        "gemini-3.8-flash",
+        "gemini-3.5-flash",
         "gemini-flash-latest",
       ];
       const uniqueModels = [...new Set(modelNames.filter(Boolean))] as string[];
 
-      // Build history for Gemini from THIS conversation's messages
+      // Keep only recent 20 messages for context (prevents huge payloads from slowing generation)
+      const recentMessages = conversation.messages.slice(-20);
       const history: { role: string; parts: { text: string }[] }[] = [];
-      for (const chat of conversation.messages) {
+      for (const chat of recentMessages) {
         const geminiRole = chat.role === "assistant" ? "model" : "user";
         if (history.length === 0 && geminiRole !== "user") {
           continue;
@@ -219,7 +237,13 @@ export const generateChatCompletion = async (
 
       for (const mName of uniqueModels) {
         try {
-          const model = genAI.getGenerativeModel({ model: mName });
+          const model = genAI.getGenerativeModel({
+            model: mName,
+            generationConfig: {
+              maxOutputTokens: 2048,
+              temperature: 0.7,
+            },
+          });
           const chatSession = model.startChat({ history });
           const result = await chatSession.sendMessage(
             currentParts.length === 1 ? currentParts[0] : currentParts
@@ -236,15 +260,14 @@ export const generateChatCompletion = async (
         throw lastError || new Error("Failed to receive response from Gemini");
       }
 
-      // Save messages in conversation
+      // Save messages in conversation and user profile concurrently
       conversation.messages.push({ content: recordedMessage, role: "user" });
       conversation.messages.push({ content: replyText, role: "assistant" });
-      await conversation.save();
 
-      // Legacy fallback sync
       user.chats.push({ content: recordedMessage, role: "user" });
       user.chats.push({ content: replyText, role: "assistant" });
-      await user.save();
+
+      await Promise.all([conversation.save(), user.save()]);
 
       return res.status(200).json({
         conversationId: conversation._id,

@@ -268,11 +268,9 @@ export const observeTopicFromQuestion = async (
   if (geminiKey && cleanPrompt.length > 2) {
     const candidateModels = [
       process.env.GEMINI_MODEL,
-      "gemini-2.0-flash",
-      "gemini-1.5-flash",
-      "gemini-1.5-pro",
+      "gemini-3.1-flash-lite",
       "gemini-3.5-flash-lite",
-      "gemini-3.8-flash",
+      "gemini-3.5-flash",
       "gemini-flash-latest",
     ];
     const uniqueModels = [...new Set(candidateModels.filter(Boolean))] as string[];
@@ -298,17 +296,17 @@ Return ONLY the corrected 2 to 5 word reference topic title. No quotes, no expla
           const model = genAI.getGenerativeModel({
             model: mName,
             generationConfig: {
-              maxOutputTokens: 120,
+              maxOutputTokens: 60,
               temperature: 0.1,
             },
           });
 
-          // Timeout after 3 seconds per attempt so UI is never blocked
+          // Fast 1.5-second timeout so background task completes immediately
           const aiPromise = model.generateContent(instruction);
           const timeoutPromise = new Promise<never>((_, reject) =>
             setTimeout(
               () => reject(new Error(`Timeout on model ${mName}`)),
-              3000
+              1500
             )
           );
 
