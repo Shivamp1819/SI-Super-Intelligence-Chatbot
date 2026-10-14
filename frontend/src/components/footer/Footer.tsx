@@ -7,15 +7,18 @@ import {
   FaYoutube,
   FaEnvelope,
 } from "react-icons/fa";
+import { useThemeMode } from "../../context/ThemeContext";
 
 const Footer = () => {
+  const { isDark } = useThemeMode();
+
   return (
     <footer>
       <div className="footer-container">
-        <p className="footer-text">
+        <p className="footer-text" style={{ color: isDark ? "white" : "#0f172a" }}>
           Built With Love By{" "}
           <Link
-            style={{ color: "white", textDecoration: "none" }}
+            style={{ color: isDark ? "#00fffc" : "#0284c7", textDecoration: "none", fontWeight: 700 }}
             className="footer-link"
             to={"https://www.youtube.com/@m_rs_p"}
             target="_blank"

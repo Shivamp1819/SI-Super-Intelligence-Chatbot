@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import red from "@mui/material/colors/red";
 import { useAuth } from "../context/AuthContext";
+import { useThemeMode } from "../context/ThemeContext";
 import ChatItem from "../components/chat/ChatItem";
 import { IoMdSend } from "react-icons/io";
 import {
@@ -196,6 +197,7 @@ const Chat = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const auth = useAuth();
+  const { isDark } = useThemeMode();
 
   // Conversations & active chat states
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
@@ -683,13 +685,14 @@ const Chat = () => {
           display: "flex",
           width: isMobileDrawer ? "100%" : "320px",
           height: "100%",
-          bgcolor: isMobileDrawer ? "transparent" : "rgb(17,29,39)",
+          bgcolor: isMobileDrawer ? "transparent" : isDark ? "rgb(17,29,39)" : "#ffffff",
           borderRadius: isMobileDrawer ? 0 : 4,
           flexDirection: "column",
           p: isMobileDrawer ? 1 : 2,
           boxSizing: "border-box",
-          border: isMobileDrawer ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
-          boxShadow: isMobileDrawer ? "none" : "0 8px 32px rgba(0, 0, 0, 0.35)",
+          border: isMobileDrawer ? "none" : isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid rgba(15, 23, 42, 0.08)",
+          boxShadow: isMobileDrawer ? "none" : isDark ? "0 8px 32px rgba(0, 0, 0, 0.35)" : "0 10px 30px rgba(15, 23, 42, 0.06)",
+          transition: "all 0.3s ease",
         }}
       >
         {/* Top Row: New Chat Button + Collapse/Close Button */}
@@ -1223,12 +1226,13 @@ const Chat = () => {
           height: "100%",
           flexDirection: "column",
           minWidth: 0,
-          bgcolor: "rgb(17,29,39)",
+          bgcolor: isDark ? "rgb(17,29,39)" : "#ffffff",
           borderRadius: { xs: 2.5, md: 4 },
-          border: "1px solid rgba(255, 255, 255, 0.08)",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.35)",
+          border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid rgba(15, 23, 42, 0.08)",
+          boxShadow: isDark ? "0 8px 32px rgba(0, 0, 0, 0.35)" : "0 10px 30px rgba(15, 23, 42, 0.06)",
           p: { xs: 1.2, sm: 1.6, md: 2 },
           boxSizing: "border-box",
+          transition: "all 0.3s ease",
         }}
       >
         {/* Top bar with Current Topic Badge & Sidebar Toggle */}
@@ -1320,8 +1324,8 @@ const Chat = () => {
             width: "100%",
             flex: 1,
             borderRadius: 3,
-            bgcolor: "rgba(10, 18, 26, 0.4)",
-            border: "1px solid rgba(255, 255, 255, 0.05)",
+            bgcolor: isDark ? "rgba(10, 18, 26, 0.4)" : "#f8fafc",
+            border: isDark ? "1px solid rgba(255, 255, 255, 0.05)" : "1px solid rgba(15, 23, 42, 0.06)",
             boxSizing: "border-box",
             display: "flex",
             flexDirection: "column",
@@ -1330,6 +1334,7 @@ const Chat = () => {
             overflowY: "auto",
             scrollBehavior: "smooth",
             p: 2,
+            transition: "all 0.3s ease",
           }}
         >
           {isLoadingSession ? (
@@ -1519,12 +1524,13 @@ const Chat = () => {
           sx={{
             width: "100%",
             borderRadius: 3,
-            backgroundColor: "rgb(13,22,31)",
+            backgroundColor: isDark ? "rgb(13,22,31)" : "#f1f5f9",
             display: "flex",
             flexDirection: "column",
             mt: 1.5,
-            border: "1px solid rgba(255,255,255,0.08)",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+            border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(2, 132, 199, 0.2)",
+            boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.3)" : "0 2px 10px rgba(15, 23, 42, 0.05)",
+            transition: "all 0.3s ease",
           }}
         >
           {/* Selected File Chip */}
@@ -1625,7 +1631,7 @@ const Chat = () => {
                 px: { xs: 0.5, sm: 0.8 },
                 border: "none",
                 outline: "none",
-                color: "white",
+                color: isDark ? "white" : "#0f172a",
                 fontSize: "16px",
                 fontFamily: "inherit",
               }}

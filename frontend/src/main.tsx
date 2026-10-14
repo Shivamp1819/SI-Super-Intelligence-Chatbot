@@ -21,25 +21,20 @@ if (typeof window !== "undefined" && "speechSynthesis" in window) {
     window.speechSynthesis.getVoices();
   };
 }
-const theme = createTheme({
-  typography: {
-    fontFamily: "Roboto Slab,serif",
-    allVariants: { color: "white" },
-  },
-});
+import { ThemeContextProvider } from "./context/ThemeContext.tsx";
 import ErrorBoundary from "./components/shared/ErrorBoundary.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <AuthProvider>
-        <BrowserRouter>
-          <ThemeProvider theme={theme}>
+      <ThemeContextProvider>
+        <AuthProvider>
+          <BrowserRouter>
             <Toaster position="top-right" />
             <App />
-          </ThemeProvider>
-        </BrowserRouter>
-      </AuthProvider>
+          </BrowserRouter>
+        </AuthProvider>
+      </ThemeContextProvider>
     </ErrorBoundary>
   </React.StrictMode>
 );

@@ -8,6 +8,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useAuth } from "../../context/AuthContext";
+import { useThemeMode } from "../../context/ThemeContext";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { coldarkDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import {
@@ -57,6 +58,7 @@ const ChatItem = ({
   id?: string;
 }) => {
   const auth = useAuth();
+  const { isDark } = useThemeMode();
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState<boolean | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -892,13 +894,18 @@ const ChatItem = ({
         width: "fit-content",
         px: { xs: 1.2, sm: 2 },
         py: { xs: 1.2, sm: 1.5 },
-        bgcolor: "rgba(17, 29, 39, 0.7)",
-        border: "1px solid rgba(0, 255, 252, 0.12)",
+        bgcolor: isDark ? "rgba(17, 29, 39, 0.7)" : "#ffffff",
+        border: isDark
+          ? "1px solid rgba(0, 255, 252, 0.12)"
+          : "1px solid rgba(2, 132, 199, 0.16)",
         gap: { xs: 1, sm: 1.5 },
         borderRadius: "16px 16px 16px 4px",
         my: 0.8,
         alignItems: "flex-start",
-        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
+        boxShadow: isDark
+          ? "0 2px 10px rgba(0, 0, 0, 0.2)"
+          : "0 4px 16px rgba(15, 23, 42, 0.05)",
+        transition: "all 0.3s ease",
       }}
     >
       <Avatar
@@ -947,8 +954,9 @@ const ChatItem = ({
               fontSize: { xs: "14px", sm: "15px" },
               lineHeight: 1.6,
               whiteSpace: "pre-wrap",
-              color: "#e6e6e6",
+              color: isDark ? "#e6e6e6" : "#0f172a",
               wordBreak: "break-word",
+              transition: "color 0.3s ease",
             }}
           >
             {actualContent}
@@ -980,8 +988,9 @@ const ChatItem = ({
                   fontSize: { xs: "14px", sm: "15px" },
                   lineHeight: 1.6,
                   whiteSpace: "pre-wrap",
-                  color: "#e6e6e6",
+                  color: isDark ? "#e6e6e6" : "#0f172a",
                   wordBreak: "break-word",
+                  transition: "color 0.3s ease",
                 }}
               >
                 {block}
@@ -1170,14 +1179,21 @@ const ChatItem = ({
         ml: "auto",
         px: { xs: 1.4, sm: 2 },
         py: { xs: 1.2, sm: 1.5 },
-        bgcolor: "#004d56",
-        background: "linear-gradient(135deg, #005c66, #004d56)",
+        bgcolor: isDark ? "#004d56" : "#0284c7",
+        background: isDark
+          ? "linear-gradient(135deg, #005c66, #004d56)"
+          : "linear-gradient(135deg, #0284c7, #0369a1)",
         gap: { xs: 1, sm: 1.5 },
         borderRadius: "16px 16px 4px 16px",
         my: 0.8,
         alignItems: "flex-start",
-        boxShadow: "0 3px 12px rgba(0, 77, 86, 0.4)",
-        border: "1px solid rgba(0, 255, 252, 0.2)",
+        boxShadow: isDark
+          ? "0 3px 12px rgba(0, 77, 86, 0.4)"
+          : "0 4px 14px rgba(2, 132, 199, 0.25)",
+        border: isDark
+          ? "1px solid rgba(0, 255, 252, 0.2)"
+          : "1px solid rgba(2, 132, 199, 0.3)",
+        transition: "all 0.3s ease",
       }}
     >
       <Box sx={{ width: "100%", overflowX: "auto" }}>

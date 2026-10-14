@@ -18,10 +18,12 @@ import {
 } from "../helpers/api-communicator";
 import { FiCheckCircle, FiArrowLeft, FiKey } from "react-icons/fi";
 import DynamicRobot from "../components/robot/DynamicRobot";
+import { useThemeMode } from "../context/ThemeContext";
 
 const Login = () => {
   const navigate = useNavigate();
   const auth = useAuth();
+  const { isDark } = useThemeMode();
 
   // Mode: "login" or "forgot_password"
   const [mode, setMode] = useState<"login" | "forgot_password">("login");
@@ -276,13 +278,18 @@ const Login = () => {
             sx={{
               margin: 0,
               p: { xs: 2.2, sm: 3.2 },
-              bgcolor: "rgb(17,29,39)",
-              boxShadow: "0 10px 40px rgba(0, 0, 0, 0.5)",
+              bgcolor: isDark ? "rgb(17,29,39)" : "#ffffff",
+              boxShadow: isDark
+                ? "0 10px 40px rgba(0, 0, 0, 0.5)"
+                : "0 12px 40px rgba(15, 23, 42, 0.08)",
               borderRadius: "14px",
-              border: "1px solid rgba(255, 255, 255, 0.08)",
+              border: isDark
+                ? "1px solid rgba(255, 255, 255, 0.08)"
+                : "1px solid rgba(2, 132, 199, 0.2)",
               width: "100%",
               maxWidth: "390px",
               boxSizing: "border-box",
+              transition: "all 0.3s ease",
             }}
           >
             <Box
@@ -296,7 +303,7 @@ const Login = () => {
                 variant="h5"
                 textAlign="center"
                 fontWeight={700}
-                color="white"
+                color={isDark ? "white" : "#0f172a"}
                 mb={0.3}
               >
                 Login
@@ -305,7 +312,7 @@ const Login = () => {
                 variant="caption"
                 display="block"
                 textAlign="center"
-                color="rgba(255,255,255,0.6)"
+                color={isDark ? "rgba(255,255,255,0.6)" : "#64748b"}
                 mb={1.5}
               >
                 Enter your credentials to access your chats
@@ -375,7 +382,7 @@ const Login = () => {
                 <Button
                   onClick={() => setMode("forgot_password")}
                   sx={{
-                    color: "#00fffc",
+                    color: isDark ? "#00fffc" : "#0284c7",
                     textTransform: "none",
                     fontSize: "12px",
                     fontWeight: 600,
@@ -400,22 +407,24 @@ const Login = () => {
                   py: 1.1,
                   mt: 0.5,
                   borderRadius: 2,
-                  bgcolor: "#00fffc",
-                  color: "#001a1c",
+                  bgcolor: isDark ? "#00fffc" : "#0284c7",
+                  color: isDark ? "#001a1c" : "#ffffff",
                   fontWeight: 700,
                   fontSize: "14.5px",
                   textTransform: "none",
-                  boxShadow: "0 4px 16px rgba(0, 255, 252, 0.25)",
+                  boxShadow: isDark
+                    ? "0 4px 16px rgba(0, 255, 252, 0.25)"
+                    : "0 4px 16px rgba(2, 132, 199, 0.25)",
                   ":hover": {
-                    bgcolor: "white",
-                    color: "black",
+                    bgcolor: isDark ? "white" : "#0369a1",
+                    color: isDark ? "black" : "#ffffff",
                     transform: "translateY(-1px)",
                   },
                 }}
                 endIcon={<IoIosLogIn size={18} />}
               >
                 {isLoggingIn ? (
-                  <CircularProgress size={16} sx={{ color: "#001a1c" }} />
+                  <CircularProgress size={16} sx={{ color: isDark ? "#001a1c" : "#ffffff" }} />
                 ) : (
                   "Login"
                 )}
@@ -423,12 +432,12 @@ const Login = () => {
 
               {/* Link to Signup */}
               <Box textAlign="center" mt={1.8}>
-                <Typography variant="caption" color="rgba(255, 255, 255, 0.6)">
+                <Typography variant="caption" color={isDark ? "rgba(255, 255, 255, 0.6)" : "#64748b"}>
                   Don't have an account?{" "}
                   <Link
                     to="/signup"
                     style={{
-                      color: "#00fffc",
+                      color: isDark ? "#00fffc" : "#0284c7",
                       fontWeight: 600,
                       textDecoration: "none",
                     }}
@@ -447,13 +456,18 @@ const Login = () => {
             sx={{
               margin: 0,
               p: { xs: 2.2, sm: 3.2 },
-              bgcolor: "rgb(17,29,39)",
-              boxShadow: "0 10px 40px rgba(0, 0, 0, 0.5)",
+              bgcolor: isDark ? "rgb(17,29,39)" : "#ffffff",
+              boxShadow: isDark
+                ? "0 10px 40px rgba(0, 0, 0, 0.5)"
+                : "0 12px 40px rgba(15, 23, 42, 0.08)",
               borderRadius: "14px",
-              border: "1px solid rgba(255, 255, 255, 0.08)",
+              border: isDark
+                ? "1px solid rgba(255, 255, 255, 0.08)"
+                : "1px solid rgba(2, 132, 199, 0.2)",
               width: "100%",
               maxWidth: "390px",
               boxSizing: "border-box",
+              transition: "all 0.3s ease",
             }}
           >
             <Box
@@ -468,13 +482,13 @@ const Login = () => {
                 startIcon={<FiArrowLeft size={14} />}
                 onClick={() => setMode("login")}
                 sx={{
-                  color: "rgba(255, 255, 255, 0.7)",
+                  color: isDark ? "rgba(255, 255, 255, 0.7)" : "#475569",
                   textTransform: "none",
                   fontSize: "12px",
                   alignSelf: "flex-start",
                   p: 0,
                   mb: 1,
-                  ":hover": { color: "#00fffc", bgcolor: "transparent" },
+                  ":hover": { color: isDark ? "#00fffc" : "#0284c7", bgcolor: "transparent" },
                 }}
               >
                 Back to Login

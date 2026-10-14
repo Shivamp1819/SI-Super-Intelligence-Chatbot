@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Box, Typography, IconButton, Tooltip } from "@mui/material";
 import { FiCopy, FiCheck, FiRotateCcw, FiZap } from "react-icons/fi";
+import { useThemeMode } from "../../context/ThemeContext";
 
 interface CodeBlockProps {
   code: string;
@@ -178,6 +179,8 @@ const SyntaxCodeBlock: React.FC<CodeBlockProps> = ({ code, isStreaming }) => {
 };
 
 export const LiveWorkspacePreview: React.FC = () => {
+  const { isDark } = useThemeMode();
+
   // Full script content segments for automatic generation
   const FULL_DATA = {
     intro:
@@ -291,15 +294,21 @@ export const LiveWorkspacePreview: React.FC = () => {
         width: "100%",
         maxWidth: "1000px",
         borderRadius: { xs: 3, md: 4 },
-        bgcolor: "#050d18",
-        border: "1px solid rgba(0, 255, 252, 0.35)",
-        boxShadow: "0 25px 70px rgba(0, 0, 0, 0.8), 0 0 50px rgba(0, 255, 252, 0.18)",
+        bgcolor: isDark ? "#050d18" : "#ffffff",
+        border: isDark
+          ? "1px solid rgba(0, 255, 252, 0.35)"
+          : "1px solid rgba(2, 132, 199, 0.25)",
+        boxShadow: isDark
+          ? "0 25px 70px rgba(0, 0, 0, 0.8), 0 0 50px rgba(0, 255, 252, 0.18)"
+          : "0 20px 60px rgba(15, 23, 42, 0.08), 0 0 35px rgba(2, 132, 199, 0.08)",
         overflow: "hidden",
         position: "relative",
-        transition: "box-shadow 0.4s ease, border-color 0.4s ease",
+        transition: "all 0.4s ease",
         "&:hover": {
-          borderColor: "rgba(0, 255, 252, 0.6)",
-          boxShadow: "0 30px 90px rgba(0, 0, 0, 0.9), 0 0 70px rgba(0, 255, 252, 0.28)",
+          borderColor: isDark ? "rgba(0, 255, 252, 0.6)" : "rgba(2, 132, 199, 0.5)",
+          boxShadow: isDark
+            ? "0 30px 90px rgba(0, 0, 0, 0.9), 0 0 70px rgba(0, 255, 252, 0.28)"
+            : "0 25px 75px rgba(15, 23, 42, 0.12), 0 0 45px rgba(2, 132, 199, 0.15)",
         },
       }}
       onMouseEnter={() => setIsPaused(false)}
@@ -312,9 +321,12 @@ export const LiveWorkspacePreview: React.FC = () => {
           justifyContent: "space-between",
           px: { xs: 2, sm: 2.5 },
           py: 1.5,
-          bgcolor: "rgba(10, 22, 36, 0.95)",
-          borderBottom: "1px solid rgba(0, 255, 252, 0.15)",
+          bgcolor: isDark ? "rgba(10, 22, 36, 0.95)" : "#f1f5f9",
+          borderBottom: isDark
+            ? "1px solid rgba(0, 255, 252, 0.15)"
+            : "1px solid rgba(15, 23, 42, 0.08)",
           backdropFilter: "blur(12px)",
+          transition: "all 0.3s ease",
         }}
       >
         {/* macOS Traffic Lights */}
@@ -327,7 +339,7 @@ export const LiveWorkspacePreview: React.FC = () => {
               display: { xs: "none", sm: "block" },
               ml: 1.5,
               fontSize: "12px",
-              color: "rgba(255, 255, 255, 0.7)",
+              color: isDark ? "rgba(255, 255, 255, 0.7)" : "#475569",
               fontWeight: 600,
               fontFamily: "monospace",
               letterSpacing: 0.5,
@@ -347,8 +359,22 @@ export const LiveWorkspacePreview: React.FC = () => {
               px: 1.5,
               py: 0.4,
               borderRadius: "20px",
-              bgcolor: isCompleted ? "rgba(39, 201, 63, 0.12)" : "rgba(0, 255, 252, 0.12)",
-              border: `1px solid ${isCompleted ? "rgba(39, 201, 63, 0.4)" : "rgba(0, 255, 252, 0.4)"}`,
+              bgcolor: isCompleted
+                ? isDark
+                  ? "rgba(39, 201, 63, 0.12)"
+                  : "rgba(16, 185, 129, 0.12)"
+                : isDark
+                ? "rgba(0, 255, 252, 0.12)"
+                : "rgba(2, 132, 199, 0.12)",
+              border: `1px solid ${
+                isCompleted
+                  ? isDark
+                    ? "rgba(39, 201, 63, 0.4)"
+                    : "rgba(16, 185, 129, 0.4)"
+                  : isDark
+                  ? "rgba(0, 255, 252, 0.4)"
+                  : "rgba(2, 132, 199, 0.4)"
+              }`,
             }}
           >
             <Box
@@ -356,8 +382,18 @@ export const LiveWorkspacePreview: React.FC = () => {
                 width: 7,
                 height: 7,
                 borderRadius: "50%",
-                bgcolor: isCompleted ? "#27c93f" : "#00fffc",
-                boxShadow: isCompleted ? "0 0 8px #27c93f" : "0 0 8px #00fffc",
+                bgcolor: isCompleted
+                  ? isDark
+                    ? "#27c93f"
+                    : "#10b981"
+                  : isDark
+                  ? "#00fffc"
+                  : "#0284c7",
+                boxShadow: isCompleted
+                  ? "0 0 8px #27c93f"
+                  : isDark
+                  ? "0 0 8px #00fffc"
+                  : "0 0 8px #0284c7",
                 animation: isCompleted ? "none" : "blinkCursor 1s infinite",
               }}
             />
@@ -365,7 +401,13 @@ export const LiveWorkspacePreview: React.FC = () => {
               sx={{
                 fontSize: "11px",
                 fontWeight: 700,
-                color: isCompleted ? "#27c93f" : "#00fffc",
+                color: isCompleted
+                  ? isDark
+                    ? "#27c93f"
+                    : "#10b981"
+                  : isDark
+                  ? "#00fffc"
+                  : "#0284c7",
                 letterSpacing: 0.4,
               }}
             >
@@ -378,12 +420,14 @@ export const LiveWorkspacePreview: React.FC = () => {
               size="small"
               onClick={resetAnimation}
               sx={{
-                color: "#00fffc",
-                bgcolor: "rgba(0, 255, 252, 0.08)",
-                border: "1px solid rgba(0, 255, 252, 0.25)",
+                color: isDark ? "#00fffc" : "#0284c7",
+                bgcolor: isDark ? "rgba(0, 255, 252, 0.08)" : "rgba(2, 132, 199, 0.08)",
+                border: isDark
+                  ? "1px solid rgba(0, 255, 252, 0.25)"
+                  : "1px solid rgba(2, 132, 199, 0.25)",
                 p: 0.6,
                 "&:hover": {
-                  bgcolor: "rgba(0, 255, 252, 0.2)",
+                  bgcolor: isDark ? "rgba(0, 255, 252, 0.2)" : "rgba(2, 132, 199, 0.18)",
                   transform: "rotate(-45deg)",
                 },
                 transition: "all 0.3s ease",
@@ -406,9 +450,14 @@ export const LiveWorkspacePreview: React.FC = () => {
             p: { xs: 1.2, sm: 1.6 },
             px: { xs: 1.5, sm: 2.2 },
             borderRadius: "14px",
-            bgcolor: "rgba(0, 60, 72, 0.65)",
-            border: "1px solid rgba(0, 255, 252, 0.3)",
-            boxShadow: "0 4px 18px rgba(0, 0, 0, 0.3)",
+            bgcolor: isDark ? "rgba(0, 60, 72, 0.65)" : "rgba(2, 132, 199, 0.08)",
+            border: isDark
+              ? "1px solid rgba(0, 255, 252, 0.3)"
+              : "1px solid rgba(2, 132, 199, 0.2)",
+            boxShadow: isDark
+              ? "0 4px 18px rgba(0, 0, 0, 0.3)"
+              : "0 2px 8px rgba(15, 23, 42, 0.04)",
+            transition: "all 0.3s ease",
           }}
         >
           {/* User Avatar Initial */}
@@ -417,26 +466,29 @@ export const LiveWorkspacePreview: React.FC = () => {
               width: 32,
               height: 32,
               borderRadius: "50%",
-              bgcolor: "#001b22",
-              border: "1.5px solid #00fffc",
+              bgcolor: isDark ? "#001b22" : "#e0f2fe",
+              border: isDark ? "1.5px solid #00fffc" : "1.5px solid #0284c7",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#00fffc",
+              color: isDark ? "#00fffc" : "#0284c7",
               fontWeight: 800,
               fontSize: "12px",
               flexShrink: 0,
-              boxShadow: "0 0 10px rgba(0, 255, 252, 0.3)",
+              boxShadow: isDark
+                ? "0 0 10px rgba(0, 255, 252, 0.3)"
+                : "0 0 8px rgba(2, 132, 199, 0.25)",
             }}
           >
             MH
           </Box>
           <Typography
             sx={{
-              color: "#ffffff",
+              color: isDark ? "#ffffff" : "#0f172a",
               fontSize: { xs: "13.5px", sm: "15px" },
               fontWeight: 600,
               letterSpacing: 0.2,
+              transition: "color 0.3s ease",
             }}
           >
             Can you show how can I declare variable in JavaScript
@@ -451,8 +503,11 @@ export const LiveWorkspacePreview: React.FC = () => {
             gap: { xs: 1.5, sm: 2 },
             p: { xs: 1.5, sm: 2.5 },
             borderRadius: "16px",
-            bgcolor: "rgba(10, 20, 32, 0.7)",
-            border: "1px solid rgba(0, 255, 252, 0.15)",
+            bgcolor: isDark ? "rgba(10, 20, 32, 0.7)" : "#f8fafc",
+            border: isDark
+              ? "1px solid rgba(0, 255, 252, 0.15)"
+              : "1px solid rgba(15, 23, 42, 0.08)",
+            transition: "all 0.3s ease",
           }}
         >
           {/* SI Logo Avatar (Completely replacing ChatGPT logo) */}
@@ -462,11 +517,13 @@ export const LiveWorkspacePreview: React.FC = () => {
               height: { xs: 34, sm: 40 },
               borderRadius: "50%",
               overflow: "hidden",
-              border: "2px solid #00fffc",
-              boxShadow: "0 0 14px rgba(0, 255, 252, 0.5)",
+              border: isDark ? "2px solid #00fffc" : "2px solid #0284c7",
+              boxShadow: isDark
+                ? "0 0 14px rgba(0, 255, 252, 0.5)"
+                : "0 0 12px rgba(2, 132, 199, 0.4)",
               flexShrink: 0,
               mt: 0.5,
-              bgcolor: "#000814",
+              bgcolor: isDark ? "#000814" : "#ffffff",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -490,10 +547,11 @@ export const LiveWorkspacePreview: React.FC = () => {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
               <Typography
                 sx={{
-                  color: "#00fffc",
+                  color: isDark ? "#00fffc" : "#0284c7",
                   fontWeight: 700,
                   fontSize: { xs: "13px", sm: "14px" },
                   letterSpacing: 0.5,
+                  transition: "color 0.3s ease",
                 }}
               >
                 SI Super Intelligence
@@ -503,15 +561,23 @@ export const LiveWorkspacePreview: React.FC = () => {
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 0.4,
-                  bgcolor: "rgba(0, 255, 252, 0.1)",
-                  border: "1px solid rgba(0, 255, 252, 0.25)",
+                  bgcolor: isDark ? "rgba(0, 255, 252, 0.1)" : "rgba(2, 132, 199, 0.1)",
+                  border: isDark
+                    ? "1px solid rgba(0, 255, 252, 0.25)"
+                    : "1px solid rgba(2, 132, 199, 0.25)",
                   px: 0.8,
                   py: 0.2,
                   borderRadius: "6px",
                 }}
               >
-                <FiZap size={11} color="#00fffc" />
-                <Typography sx={{ color: "#00fffc", fontSize: "10px", fontWeight: 700 }}>
+                <FiZap size={11} color={isDark ? "#00fffc" : "#0284c7"} />
+                <Typography
+                  sx={{
+                    color: isDark ? "#00fffc" : "#0284c7",
+                    fontSize: "10px",
+                    fontWeight: 700,
+                  }}
+                >
                   Flash Multi-Model
                 </Typography>
               </Box>
@@ -521,10 +587,11 @@ export const LiveWorkspacePreview: React.FC = () => {
             {displayedIntro && (
               <Typography
                 sx={{
-                  color: "rgba(255, 255, 255, 0.9)",
+                  color: isDark ? "rgba(255, 255, 255, 0.9)" : "#1e293b",
                   fontSize: { xs: "13.5px", sm: "14.5px" },
                   lineHeight: 1.6,
                   mb: 1.5,
+                  transition: "color 0.3s ease",
                 }}
               >
                 {displayedIntro}
@@ -535,7 +602,7 @@ export const LiveWorkspacePreview: React.FC = () => {
                       display: "inline-block",
                       width: "2px",
                       height: "14px",
-                      bgcolor: "#00fffc",
+                      bgcolor: isDark ? "#00fffc" : "#0284c7",
                       ml: "2px",
                       verticalAlign: "middle",
                       animation: "blinkCursor 0.8s infinite",
@@ -549,11 +616,12 @@ export const LiveWorkspacePreview: React.FC = () => {
             {displayedVarLabel && (
               <Typography
                 sx={{
-                  color: "#ffffff",
+                  color: isDark ? "#ffffff" : "#0f172a",
                   fontSize: { xs: "13px", sm: "14px" },
                   fontWeight: 600,
                   mt: 1.5,
                   mb: 0.5,
+                  transition: "color 0.3s ease",
                 }}
               >
                 {displayedVarLabel}
@@ -567,11 +635,12 @@ export const LiveWorkspacePreview: React.FC = () => {
             {displayedLetLabel && (
               <Typography
                 sx={{
-                  color: "#ffffff",
+                  color: isDark ? "#ffffff" : "#0f172a",
                   fontSize: { xs: "13px", sm: "14px" },
                   fontWeight: 600,
                   mt: 2,
                   mb: 0.5,
+                  transition: "color 0.3s ease",
                 }}
               >
                 {displayedLetLabel}
@@ -585,11 +654,12 @@ export const LiveWorkspacePreview: React.FC = () => {
             {displayedConstLabel && (
               <Typography
                 sx={{
-                  color: "#ffffff",
+                  color: isDark ? "#ffffff" : "#0f172a",
                   fontSize: { xs: "13px", sm: "14px" },
                   fontWeight: 600,
                   mt: 2,
                   mb: 0.5,
+                  transition: "color 0.3s ease",
                 }}
               >
                 {displayedConstLabel}
@@ -606,15 +676,19 @@ export const LiveWorkspacePreview: React.FC = () => {
                   mt: 2.5,
                   p: 2,
                   borderRadius: "10px",
-                  bgcolor: "rgba(0, 255, 252, 0.03)",
-                  border: "1px solid rgba(0, 255, 252, 0.12)",
+                  bgcolor: isDark ? "rgba(0, 255, 252, 0.03)" : "rgba(2, 132, 199, 0.04)",
+                  border: isDark
+                    ? "1px solid rgba(0, 255, 252, 0.12)"
+                    : "1px solid rgba(2, 132, 199, 0.15)",
+                  transition: "all 0.3s ease",
                 }}
               >
                 <Typography
                   sx={{
-                    color: "rgba(255, 255, 255, 0.85)",
+                    color: isDark ? "rgba(255, 255, 255, 0.85)" : "#334155",
                     fontSize: { xs: "13px", sm: "14px" },
                     lineHeight: 1.7,
+                    transition: "color 0.3s ease",
                   }}
                 >
                   {displayedExplanation}
@@ -625,7 +699,7 @@ export const LiveWorkspacePreview: React.FC = () => {
                         display: "inline-block",
                         width: "2px",
                         height: "14px",
-                        bgcolor: "#00fffc",
+                        bgcolor: isDark ? "#00fffc" : "#0284c7",
                         ml: "3px",
                         verticalAlign: "middle",
                         animation: "blinkCursor 0.8s infinite",
