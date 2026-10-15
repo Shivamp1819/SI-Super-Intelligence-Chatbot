@@ -18,43 +18,47 @@ export const generateNumericOtp = (): string => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-/**
- * Creates a nodemailer transporter using env variables if configured.
- * @param targetPort Optional explicit port (defaults to configured SMTP_PORT or 587)
- */
-const createTransporter = (targetPort?: number) => {
-  // Ensure the latest environment variables from .env are loaded
-  try {
-    config({ override: true });
-  } catch (e) {
-    // ignore
-  }
+// Global cached transporter with connection pooling for lightning-fast OTP delivery
+let cachedTransporter: any = null;
+let cachedTransporterPort: number | null = null;
 
+/**
+ * Creates or retrieves a persistent, pooled nodemailer transporter with IPv4 acceleration.
+ * @param targetPort Optional explicit port (defaults to configured SMTP_PORT or 465)
+ */
+const getPooledTransporter = (targetPort?: number) => {
   const host = (process.env.SMTP_HOST || process.env.EMAIL_HOST || "smtp.gmail.com").trim();
   const configuredPort = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT);
-  const port = targetPort || configuredPort || 587;
+  const port = targetPort || configuredPort || 465;
   const user = (process.env.SMTP_USER || process.env.EMAIL_USER || "").trim();
-  // Strip whitespace from passwords (Google App Passwords are often copied as "abcd efgh ijkl mnop")
   const pass = (process.env.SMTP_PASS || process.env.EMAIL_PASS || "").replace(/\s+/g, "");
 
-  if (user && pass) {
-    const isSecure = port === 465;
-    return nodemailer.createTransport({
-      host: host || "smtp.gmail.com",
-      port,
-      secure: isSecure,
-      auth: { user, pass },
-      family: 4, // CRITICAL: Force IPv4 socket to prevent ENETUNREACH on Render/cloud hosts
-      connectionTimeout: 3500,
-      greetingTimeout: 3500,
-      socketTimeout: 5000,
-      tls: {
-        rejectUnauthorized: false,
-      },
-    } as any);
+  if (!user || !pass) return null;
+
+  if (cachedTransporter && cachedTransporterPort === port) {
+    return cachedTransporter;
   }
 
-  return null;
+  const isSecure = port === 465;
+  cachedTransporter = nodemailer.createTransport({
+    host: host || "smtp.gmail.com",
+    port,
+    secure: isSecure,
+    family: 4, // CRITICAL: Force IPv4 to prevent 20-second IPv6 timeout on Indian/cloud networks
+    pool: true, // Keep socket alive for instant subsequent emails
+    maxConnections: 5,
+    maxMessages: 100,
+    connectionTimeout: 4000,
+    greetingTimeout: 4000,
+    socketTimeout: 6000,
+    auth: { user, pass },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  } as any);
+
+  cachedTransporterPort = port;
+  return cachedTransporter;
 };
 
 /**
@@ -206,7 +210,7 @@ export const sendOtpEmail = async (
     const portsToTry = configuredPort === 465 ? [465, 587] : [587, 465];
 
     for (const port of portsToTry) {
-      const transporter = createTransporter(port);
+      const transporter = getPooledTransporter(port);
       if (transporter) {
         try {
           await transporter.sendMail({

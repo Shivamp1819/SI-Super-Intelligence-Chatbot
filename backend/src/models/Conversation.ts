@@ -34,6 +34,10 @@ const conversationSchema = new mongoose.Schema(
       required: true,
       default: "New Chat",
     },
+    agent: {
+      type: String,
+      default: "nova",
+    },
     messages: [messageSchema],
   },
   {

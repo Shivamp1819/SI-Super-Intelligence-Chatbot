@@ -92,18 +92,21 @@ export interface ConversationItem {
   topic: string;
   createdAt: string;
   updatedAt: string;
+  agent?: string;
   messages?: { id: string; role: "user" | "assistant"; content: string }[];
 }
 
 export const sendChatRequest = async (
   message: string,
   file?: ChatFile | null,
-  conversationId?: string | null
+  conversationId?: string | null,
+  agent?: string
 ) => {
   const res = await axios.post("/chat/new", {
     message,
     file,
     conversationId,
+    agent,
   });
   if (res.status !== 200) {
     throw new Error("Unable to send chat");

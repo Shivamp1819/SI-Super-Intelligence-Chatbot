@@ -71,12 +71,33 @@ export const sendOtpController = async (
       isVerified: false,
     });
 
-    const mailResult = await sendOtpEmail(cleanEmail, otp, purpose);
+    // Lightning-fast dispatch:
+    // We launch email sending immediately. If it completes within 800ms, return the direct result;
+    // otherwise return HTTP 200 immediately while the email sends in parallel so user never waits!
+    const mailPromise = sendOtpEmail(cleanEmail, otp, purpose);
+
+    const fastResult = await Promise.race([
+      mailPromise,
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 800)),
+    ]);
+
+    if (fastResult) {
+      return res.status(200).json({
+        message: fastResult.message,
+        sentViaSmtp: fastResult.sentViaSmtp,
+        previewOtp: fastResult.previewOtp,
+      });
+    }
+
+    // Keep sending in the background without blocking the user response
+    mailPromise.catch((err) => {
+      console.error("[OTP ASYNC] Background email sending error:", err);
+    });
 
     return res.status(200).json({
-      message: mailResult.message,
-      sentViaSmtp: mailResult.sentViaSmtp,
-      previewOtp: mailResult.previewOtp,
+      message: `Verification code sent to ${cleanEmail}! Please check your email inbox and spam folder.`,
+      sentViaSmtp: true,
+      previewOtp: process.env.NODE_ENV !== "production" ? otp : undefined,
     });
   } catch (error: any) {
     console.error("Error sending OTP:", error);

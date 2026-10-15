@@ -9,6 +9,8 @@ import {
   Tooltip,
   Chip,
   Drawer,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import red from "@mui/material/colors/red";
 import { useAuth } from "../context/AuthContext";
@@ -33,6 +35,10 @@ import {
   FiArrowDown,
   FiArrowUp,
   FiMenu,
+  FiSmile,
+  FiVolume2,
+  FiVolumeX,
+  FiRadio,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import {
@@ -45,6 +51,7 @@ import {
   ConversationItem,
 } from "../helpers/api-communicator";
 import toast from "react-hot-toast";
+import RobotCompanionBox from "../components/chat/RobotCompanionBox";
 
 type Message = {
   role: "user" | "assistant";
@@ -220,6 +227,7 @@ const Chat = () => {
   const mobileSidebarScrollRef = useRef<HTMLDivElement | null>(null);
   const [showScrollBottomBtn, setShowScrollBottomBtn] = useState<boolean>(false);
   const [showMobileScrollBottomBtn, setShowMobileScrollBottomBtn] = useState<boolean>(false);
+
 
   const handleSidebarScroll = (isMobile = false) => {
     const ref = isMobile ? mobileSidebarScrollRef.current : sidebarScrollRef.current;
@@ -449,9 +457,6 @@ const Chat = () => {
       inputRef.current.style.height = "auto";
       inputRef.current.focus();
     }
-    toast.success("Fresh new chat started! What can I help you with?", {
-      icon: "✨",
-    });
   };
 
   /**
@@ -1236,7 +1241,7 @@ const Chat = () => {
         width: "100%",
         height: { xs: "calc(100dvh - 65px)", md: "calc(100vh - 80px)" },
         px: { xs: 1, sm: 1.5, md: 2 },
-        pb: { xs: 1, md: 2 },
+        pb: { xs: "calc(env(safe-area-inset-bottom, 0px) + 8px)", md: 2 },
         gap: { xs: 1, md: 2 },
         boxSizing: "border-box",
         alignItems: "stretch",
@@ -1394,6 +1399,8 @@ const Chat = () => {
               />
             </Box>
           </Box>
+
+
         </Box>
 
         {/* Chat message history container (Full Vertical Height) */}
@@ -1433,7 +1440,6 @@ const Chat = () => {
               </Typography>
             </Box>
           ) : chatMessages.length === 0 ? (
-            /* Fresh New Chat Hero State */
             <Box
               sx={{
                 display: "flex",
@@ -1443,63 +1449,43 @@ const Chat = () => {
                 flex: 1,
                 textAlign: "center",
                 px: 2,
-                py: 4,
+                py: { xs: 2, sm: 4 },
               }}
             >
               <Box
+                component="img"
+                src="/si-logo.png"
+                alt="SI Super Intelligence"
                 sx={{
-                  width: 72,
-                  height: 72,
+                  width: { xs: 60, sm: 74 },
+                  height: { xs: 60, sm: 74 },
                   borderRadius: "50%",
-                  bgcolor: isDark ? "rgba(0, 255, 252, 0.08)" : "rgba(2, 132, 199, 0.08)",
-                  border: isDark
-                    ? "2px solid rgba(0, 255, 252, 0.35)"
-                    : "2px solid rgba(2, 132, 199, 0.35)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mb: 2.5,
-                  boxShadow: isDark
-                    ? "0 0 28px rgba(0, 255, 252, 0.2)"
-                    : "0 4px 20px rgba(2, 132, 199, 0.2)",
+                  mb: 2,
+                  boxShadow: "0 0 25px rgba(0, 255, 252, 0.4)",
                 }}
-              >
-                <img
-                  src="/si-logo.png"
-                  alt="SI Super Intelligence Avatar"
-                  width="44px"
-                  height="44px"
-                  style={{
-                    borderRadius: "50%",
-                    filter: isDark
-                      ? "drop-shadow(0 0 10px rgba(0, 255, 252, 0.6))"
-                      : "drop-shadow(0 2px 10px rgba(2, 132, 199, 0.5))",
-                  }}
-                />
-              </Box>
-
+              />
               <Typography
                 sx={{
                   fontSize: { md: "24px", xs: "20px" },
                   fontWeight: 800,
                   color: isDark ? "white" : "#0f172a",
-                  mb: 1,
+                  mb: 0.8,
                   letterSpacing: 0.5,
                 }}
               >
-                Fresh New Chat
+                SI Super Intelligence AI
               </Typography>
               <Typography
                 sx={{
-                  fontSize: { md: "14.5px", xs: "13px" },
+                  fontSize: { md: "14px", xs: "13px" },
                   color: isDark ? "rgba(255, 255, 255, 0.65)" : "#475569",
                   maxWidth: "520px",
                   lineHeight: 1.6,
-                  mb: 4,
+                  mb: 3,
                 }}
               >
-                Ask any question or attach files. SI Super Intelligence will observe the topic
-                of your questions and save it automatically in the left box history.
+                Super-intelligent assistant powered by multi-engine Gemini 2.5 Flash
+                with sub-second latency and multi-modal support.
               </Typography>
 
               {/* Suggestions Grid */}
@@ -1718,6 +1704,8 @@ const Chat = () => {
                 mx: { xs: 0.2, sm: 0.5 },
                 p: { xs: 0.8, sm: 1 },
                 mb: { xs: "2px", sm: "4px" },
+                touchAction: "manipulation",
+                WebkitTapHighlightColor: "transparent",
                 ":hover": { color: isDark ? "#00fffc" : "#0284c7" },
               }}
               title="Upload PDF, Image, or ZIP"
@@ -1801,8 +1789,8 @@ const Chat = () => {
                 type="button"
                 onClick={toggleVoiceInput}
                 sx={{
-                  width: 28,
-                  height: 28,
+                  width: { xs: 32, sm: 28 },
+                  height: { xs: 32, sm: 28 },
                   borderRadius: "50%",
                   bgcolor: isListening ? "#ef4444" : "#1d72f2",
                   color: "white",
@@ -1810,6 +1798,8 @@ const Chat = () => {
                   mb: { xs: "6px", sm: "8px" },
                   p: 0,
                   flexShrink: 0,
+                  touchAction: "manipulation",
+                  WebkitTapHighlightColor: "transparent",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1897,6 +1887,8 @@ const Chat = () => {
                 mx: { xs: 0.2, sm: 0.5 },
                 p: { xs: 0.8, sm: 1 },
                 mb: { xs: "2px", sm: "4px" },
+                touchAction: "manipulation",
+                WebkitTapHighlightColor: "transparent",
                 ":hover": {
                   bgcolor: isDark
                     ? "rgba(0, 255, 252, 0.1)"
@@ -1913,6 +1905,9 @@ const Chat = () => {
           </Box>
         </Box>
       </Box>
+
+      {/* Floating 3D Spinning Robot Companion Box */}
+      <RobotCompanionBox />
     </Box>
   );
 };

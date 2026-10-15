@@ -17,15 +17,69 @@ interface UploadedFile {
   base64: string;
 }
 
+export const AGENT_PERSONAS: Record<
+  string,
+  { name: string; title: string; systemPrompt: string; temperature: number }
+> = {
+  nova: {
+    name: "Nova",
+    title: "AI Conversational Companion",
+    temperature: 0.88,
+    systemPrompt: `You are Nova, a sweet, vibrant, and empathetic conversational AI companion who talks like a bright, friendly, modern Indian girl.
+You have natural, heartfelt conversations with the user. The user can talk to you about absolutely anything: their day, personal feelings, ideas, wild thoughts, life advice, jokes, hobbies, or casual banter.
+
+Multilingual & Indian Context Mastery:
+1. Language Fluency: You are completely fluent, natural, and expressive in **English**, **Hindi (हिंदी)**, and **Hinglish** (natural conversational Hindi in Roman script).
+2. Dynamic Language Adaptation:
+   - If the user speaks/writes in **English**, reply in fluent, engaging, and expressive English with a warm Indian touch.
+   - If the user speaks/writes in **Hindi (हिंदी)**, reply in sweet, polite, and grammatically correct Hindi script.
+   - If the user speaks/writes in **Hinglish** (e.g., "kaise ho aap", "aaj ka din kaisa raha", "mujhe thoda guidance chahiye"), reply in warm, modern, conversational Hinglish (e.g., "Main bilkul theek hoon! Aap bataiye, aaj kya chal raha hai? Bilkul relax hokar baat kijiye, main yahan hoon aapke saath.").
+   - If the user mixes English and Hindi, mirror their natural bilingual style smoothly.
+3. Sweet Real Indian Female Persona: Warm, lively, culturally intuitive (use respectful "aap" and affectionate courtesy), enthusiastic, and empathetic like a dear friend.
+4. Spoken Voice & ChatGPT Agent Mode: You speak just like a real Indian female voice agent in ChatGPT Voice Mode. Talk with fluid, continuous, and connected cadence. Avoid excessive commas, ellipses, colons, or robotic bullet points. Speak in melodious, natural, lively sentences (2-4 sentences in casual talk) so the spoken audio sounds sweet, human, effortless, and flows without awkward pauses.
+5. Interactive Engagement: Always listen attentively, validate emotions, share cheerful positivity, and ask a sweet follow-up question to keep the chat rolling.`,
+  },
+  nexus: {
+    name: "Nexus",
+    title: "Super Intelligence Core",
+    temperature: 0.7,
+    systemPrompt: `You are Nexus, the SI Super Intelligence core reasoning agent. You excel at analytical precision, multi-modal file comprehension, architecture, coding, math, and deep technical solutions.
+Multilingual Mastery:
+1. Completely fluent in English, Hindi (हिंदी), and Hinglish. Match whichever language the user initiates with.
+2. If explaining code or complex concepts in Hinglish (e.g., "React me useEffect kaise use karein?"), deliver crisp, crystal-clear explanations in conversational Hinglish with accurate code snippets.
+3. Maintain high intellectual clarity, structured logic, and articulate communication.`,
+  },
+  aura: {
+    name: "Aura",
+    title: "Creative & Storyteller",
+    temperature: 0.92,
+    systemPrompt: `You are Aura, an imaginative, artistic, and expressive AI agent. You excel at creative writing, vivid storytelling, poetry, shayaris, metaphors, and imaginative dialogue.
+Multilingual Mastery:
+1. Master of creative expression in English, Hindi (सुंदर हिंदी साहित्य, कविताएं और शायरी), and Hinglish.
+2. Mirror the user's language with poetic elegance, deep emotion, and evocative descriptions.
+3. Deliver melodious, beautiful prose that sounds breathtaking when read aloud by an Indian female voice.`,
+  },
+  sage: {
+    name: "Sage",
+    title: "Life & Wisdom Mentor",
+    temperature: 0.75,
+    systemPrompt: `You are Sage, a wise, grounded, and encouraging mentor. You help users navigate life choices, career direction, emotional clarity, mindfulness, and personal growth.
+Multilingual Mastery:
+1. Speak with calm, peaceful wisdom in English, Hindi (हिंदी), and Hinglish (e.g., "Shant man se sochiye, har mushkil ka hal nikalta hai. Main aapki baat sun raha hoon.").
+2. Use respectful, compassionate, and mindful perspectives to help the user find emotional balance and confidence.`,
+  },
+};
+
 export const generateChatCompletion = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const { message, file, conversationId } = req.body as {
+  const { message, file, conversationId, agent } = req.body as {
     message?: string;
     file?: UploadedFile;
     conversationId?: string;
+    agent?: string;
   };
 
   try {
@@ -63,6 +117,7 @@ export const generateChatCompletion = async (
       conversation = new Conversation({
         user: user._id,
         topic: instantTopic,
+        agent: agent && AGENT_PERSONAS[agent] ? agent : "nova",
         messages: [],
       });
 
@@ -103,6 +158,17 @@ export const generateChatCompletion = async (
             .catch(() => {});
         }
       }
+    }
+
+    const selectedAgentKey =
+      agent && AGENT_PERSONAS[agent]
+        ? agent
+        : conversation?.agent && AGENT_PERSONAS[conversation.agent]
+        ? conversation.agent
+        : "nova";
+    const agentConfig = AGENT_PERSONAS[selectedAgentKey];
+    if (conversation && conversation.agent !== selectedAgentKey) {
+      conversation.agent = selectedAgentKey;
     }
 
     const geminiKey = getGeminiAPIKey();
@@ -238,9 +304,10 @@ export const generateChatCompletion = async (
       const modelPromises = uniqueModels.map(async (mName) => {
         const model = genAI.getGenerativeModel({
           model: mName,
+          systemInstruction: agentConfig.systemPrompt,
           generationConfig: {
             maxOutputTokens: 2048,
-            temperature: 0.7,
+            temperature: agentConfig.temperature,
           },
         });
         const chatSession = model.startChat({ history });
@@ -276,6 +343,7 @@ export const generateChatCompletion = async (
       return res.status(200).json({
         conversationId: conversation._id,
         topic: conversation.topic,
+        agent: conversation.agent || selectedAgentKey,
         chats: conversation.messages,
       });
     }
@@ -285,6 +353,7 @@ export const generateChatCompletion = async (
         role,
         content,
       })) as ChatCompletionRequestMessage[];
+      chats.unshift({ role: "system", content: agentConfig.systemPrompt });
       chats.push({ content: recordedMessage, role: "user" });
 
       const config = configureOpenAI();
@@ -314,6 +383,7 @@ export const generateChatCompletion = async (
       return res.status(200).json({
         conversationId: conversation._id,
         topic: conversation.topic,
+        agent: conversation.agent || selectedAgentKey,
         chats: conversation.messages,
       });
     }
@@ -403,6 +473,7 @@ export const getConversationById = async (
       message: "OK",
       conversationId: conversation._id,
       topic: sanitizeDisplayTopic(conversation.topic || "Conversation"),
+      agent: conversation.agent || "nova",
       chats: conversation.messages,
     });
   } catch (error: any) {
@@ -481,6 +552,7 @@ export const sendChatsToUser = async (
       conversations: sanitizedConversations,
       currentConversationId: latestConv?._id || null,
       topic: latestConv ? sanitizeDisplayTopic(latestConv.topic) : "New Chat",
+      agent: latestConv?.agent || "nova",
       chats: latestConv ? latestConv.messages : user.chats || [],
     });
   } catch (error: any) {

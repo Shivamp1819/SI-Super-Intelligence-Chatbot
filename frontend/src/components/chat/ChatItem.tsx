@@ -24,6 +24,10 @@ import {
 import { AiOutlineFilePdf } from "react-icons/ai";
 import { jsPDF } from "jspdf";
 import toast from "react-hot-toast";
+import {
+  speakWithIndianFemaleVoice,
+  stopSpeaking,
+} from "../../helpers/indianVoiceSynthesizer";
 
 function extractCodeFromString(message: string) {
   if (message.includes("```")) {
@@ -48,14 +52,89 @@ function isCodeBlock(str: string) {
   return false;
 }
 
+const CodeBlockItem = ({ code, isDark }: { code: string; isDark: boolean }) => {
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(true);
+    toast.success("Code copied to clipboard!", { icon: "📋" });
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  return (
+    <Box sx={{ position: "relative", my: 1.2, width: "100%" }}>
+      <Box
+        component="button"
+        type="button"
+        onClick={handleCopyCode}
+        sx={{
+          position: "absolute",
+          top: 8,
+          right: 8,
+          zIndex: 2,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 0.5,
+          px: 1,
+          py: 0.35,
+          borderRadius: 1.5,
+          border: isDark
+            ? "1px solid rgba(255, 255, 255, 0.18)"
+            : "1px solid rgba(0, 0, 0, 0.18)",
+          bgcolor: isDark
+            ? "rgba(17, 29, 39, 0.88)"
+            : "rgba(241, 245, 249, 0.95)",
+          color: copiedCode
+            ? "#10b981"
+            : isDark
+            ? "rgba(255, 255, 255, 0.85)"
+            : "#334155",
+          fontSize: "11px",
+          fontWeight: 600,
+          cursor: "pointer",
+          touchAction: "manipulation",
+          WebkitTapHighlightColor: "transparent",
+          backdropFilter: "blur(6px)",
+          transition: "all 0.2s ease",
+          ":hover": {
+            bgcolor: isDark ? "rgba(0, 255, 252, 0.15)" : "rgba(2, 132, 199, 0.15)",
+            borderColor: isDark ? "#00fffc" : "#0284c7",
+          },
+        }}
+      >
+        {copiedCode ? <FiCheck size={12} /> : <FiCopy size={12} />}
+        <span>{copiedCode ? "Copied" : "Copy"}</span>
+      </Box>
+      <SyntaxHighlighter
+        style={coldarkDark}
+        language="javascript"
+        customStyle={{
+          fontSize: "13px",
+          borderRadius: "8px",
+          margin: 0,
+          padding: "12px 14px",
+          paddingTop: "34px",
+          maxWidth: "100%",
+          overflowX: "auto",
+        }}
+      >
+        {code}
+      </SyntaxHighlighter>
+    </Box>
+  );
+};
+
 const ChatItem = ({
   content,
   role,
   id,
+  agent,
 }: {
   content: string;
   role: "user" | "assistant";
   id?: string;
+  agent?: string;
 }) => {
   const auth = useAuth();
   const { isDark } = useThemeMode();
@@ -140,272 +219,35 @@ const ChatItem = ({
     }
   }, []);
 
-  // Async helper to guarantee voice list is fully loaded before first playback
-  const getLoadedVoices = (): Promise<SpeechSynthesisVoice[]> => {
-    return new Promise((resolve) => {
-      if (typeof window === "undefined" || !window.speechSynthesis) {
-        resolve([]);
-        return;
-      }
 
-      const immediateVoices = window.speechSynthesis.getVoices();
-      if (immediateVoices && immediateVoices.length > 0) {
-        resolve(immediateVoices);
-        return;
-      }
 
-      let hasResolved = false;
-      const onVoicesChanged = () => {
-        if (!hasResolved) {
-          hasResolved = true;
-          window.speechSynthesis.removeEventListener("voiceschanged", onVoicesChanged);
-          resolve(window.speechSynthesis.getVoices());
-        }
-      };
 
-      window.speechSynthesis.addEventListener("voiceschanged", onVoicesChanged);
 
-      // Timeout fallback in case voices are already cached or event doesn't fire
-      setTimeout(() => {
-        if (!hasResolved) {
-          hasResolved = true;
-          window.speechSynthesis.removeEventListener("voiceschanged", onVoicesChanged);
-          resolve(window.speechSynthesis.getVoices());
-        }
-      }, 300);
-    });
-  };
 
-  const getIndianFemaleVoice = (voicesList: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null => {
-    if (!voicesList || voicesList.length === 0) return null;
-
-    // Strict blacklist of male names/keywords to never pick a male voice
-    const maleKeywords = [
-      "david",
-      "guy",
-      "mark",
-      "george",
-      "ryan",
-      "christopher",
-      "james",
-      "brian",
-      "eric",
-      "andrew",
-      "stefan",
-      "roger",
-      "tom",
-      "alex",
-      "fred",
-      "daniel",
-      "oliver",
-      "richard",
-      "stephen",
-      "male",
-      "en-us-standard-b",
-      "en-us-standard-d",
-      "en-us-wavenet-b",
-      "en-us-wavenet-d",
-      "microsoft david",
-      "microsoft mark",
-      "microsoft guy",
-      "microsoft ryan",
-      "aarav",
-      "prabhat",
-      "madhav",
-      "hemant",
-      "ravi",
-      "amit",
-      "rohit",
-      "rahul",
-      "vikram",
-      "suresh",
-      "ajay",
-      "anil",
-      "raj",
-      "kumar",
-      "manoj",
-      "sanjay",
-      "deepak",
-      "vijay",
-      "karan",
-    ];
-
-    const isMale = (name: string) => {
-      const lower = name.toLowerCase();
-      if (lower.includes("female") || lower.includes("woman")) return false;
-      return maleKeywords.some((m) => lower.includes(m));
-    };
-
-    // Specific known authentic Indian female voices ranked by naturalness and sweet tone
-    const indianFemaleNames = [
-      "neerja online (natural)", // Azure Neural Neerja: top-tier natural Indian English female voice
-      "neerja",
-      "swara online (natural)", // Azure Neural Swara (India)
-      "swara",
-      "heera", // Microsoft Heera (English - India)
-      "veena", // Apple & Microsoft Veena (English - India)
-      "kalyani",
-      "lekha",
-      "ananya",
-      "isha",
-      "priya",
-      "pooja",
-      "shruti",
-      "aditi",
-      "chahat",
-      "kalpana",
-      "ravina",
-      "sangeeta",
-      "kanya",
-      "geeta",
-      "sunita",
-      "meera",
-    ];
-
-    // Priority 1: High-quality named Indian female voices (e.g., Neerja, Swara, Heera, Veena)
-    for (const femName of indianFemaleNames) {
-      const match = voicesList.find((v) => {
-        const name = v.name.toLowerCase();
-        return name.includes(femName) && !isMale(name);
-      });
-      if (match) return match;
-    }
-
-    // Priority 2: Any voice with Indian English locale ('en-IN', 'en_IN') that is not male
-    const enInVoice = voicesList.find((v) => {
-      const lang = v.lang.toLowerCase().replace("_", "-");
-      const name = v.name.toLowerCase();
-      const isEnIn = lang === "en-in" || lang.startsWith("en-in");
-      const isExplicitFemale = name.includes("female") || name.includes("woman");
-      return isEnIn && (isExplicitFemale || !isMale(name));
-    });
-    if (enInVoice) return enInVoice;
-
-    // Priority 3: Any voice with 'india' or 'indian' in its name that is not male
-    const keywordIndiaVoice = voicesList.find((v) => {
-      const name = v.name.toLowerCase();
-      const hasIndian = name.includes("india") || name.includes("indian");
-      return hasIndian && !isMale(name);
-    });
-    if (keywordIndiaVoice) return keywordIndiaVoice;
-
-    // Priority 4: Any Hindi India locale voice ('hi-IN') that is not male
-    const hiInVoice = voicesList.find((v) => {
-      const lang = v.lang.toLowerCase().replace("_", "-");
-      const isHiIn = lang === "hi-in" || lang.startsWith("hi-in");
-      return isHiIn && !isMale(v.name);
-    });
-    if (hiInVoice) return hiInVoice;
-
-    // Priority 5: Fallback to sweet female voices in case system has no Indian voice installed
-    const sweetFemaleFallbacks = [
-      "jenny online (natural)",
-      "sonia online (natural)",
-      "aria online (natural)",
-      "libby online (natural)",
-      "michelle online (natural)",
-      "jenny",
-      "sonia",
-      "aria",
-      "google uk english female",
-      "samantha",
-      "victoria",
-      "karen",
-      "zira",
-      "female",
-    ];
-
-    for (const femName of sweetFemaleFallbacks) {
-      const match = voicesList.find((v) => {
-        const name = v.name.toLowerCase();
-        const isEn = v.lang.toLowerCase().startsWith("en");
-        return isEn && name.includes(femName) && !isMale(name);
-      });
-      if (match) return match;
-    }
-
-    // Priority 6: Any non-male English voice
-    const nonMaleEnglish = voicesList.find((v) => {
-      const isEn = v.lang.toLowerCase().startsWith("en");
-      return isEn && !isMale(v.name);
-    });
-    if (nonMaleEnglish) return nonMaleEnglish;
-
-    // Priority 7: Any non-male voice
-    const anyNonMale = voicesList.find((v) => !isMale(v.name));
-    return anyNonMale || voicesList[0] || null;
-  };
 
   const handleSpeech = async () => {
-    if (!window.speechSynthesis) {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
       toast.error("Text-to-speech not supported on this browser");
       return;
     }
 
     if (isSpeaking) {
-      window.speechSynthesis.cancel();
+      stopSpeaking();
       setIsSpeaking(false);
       return;
     }
 
-    window.speechSynthesis.cancel();
-
-    // Clean formatting and beautify text for natural, sweet, and melodious speech
-    const cleanSpeech = actualContent
-      .replace(/```[\s\S]*?```/g, "Code block omitted.")
-      .replace(/`([^`]+)`/g, "$1")
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-      .replace(/https?:\/\/\S+/g, "")
-      .replace(/^#{1,6}\s+/gm, "")
-      .replace(/^[-*+]\s+/gm, "")
-      .replace(/^\d+\.\s+/gm, "")
-      .replace(/\bAI\b/g, "A.I.")
-      .replace(/\be\.g\.\b/gi, "for example")
-      .replace(/\bi\.e\.\b/gi, "that is")
-      .replace(/\betc\.\b/gi, "and so on")
-      .replace(/&/g, " and ")
-      .replace(/%/g, " percent ")
-      .replace(/[*_~`>#|]/g, "")
-      .replace(/[:;]\s*/g, ", ")
-      .replace(/\n+/g, ". ")
-      .replace(/\s+/g, " ")
-      .replace(/\.\s*\./g, ".")
-      .trim();
-
-    if (!cleanSpeech) return;
-
-    // Await loaded voices so the very first click ALWAYS has the voices populated!
-    const availableVoices = await getLoadedVoices();
-    const indianFemaleVoice = getIndianFemaleVoice(availableVoices);
-
-    const utterance = new SpeechSynthesisUtterance(cleanSpeech);
-
-    // Explicitly target English (India) locale for authentic Indian accent & phonetics
-    utterance.lang = "en-IN";
-
-    if (indianFemaleVoice) {
-      utterance.voice = indianFemaleVoice;
-      if (indianFemaleVoice.lang) {
-        utterance.lang = indianFemaleVoice.lang;
-      }
-    }
-
-    // Melodious, clear, authentic Indian female voice parameters:
-    utterance.volume = 1.0; // Crystal-clear, fully audible loudness
-    utterance.pitch = 1.08; // Sweet, warm, authentic Indian feminine pitch
-    utterance.rate = 0.95; // Articulate, pleasant, relaxed conversational tempo
-
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-
-    window.speechSynthesis.speak(utterance);
+    speakWithIndianFemaleVoice(actualContent, {
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => setIsSpeaking(false),
+      onError: () => setIsSpeaking(false),
+    });
   };
 
   useEffect(() => {
     return () => {
-      if (isSpeaking && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
+      if (isSpeaking) {
+        stopSpeaking();
       }
     };
   }, [isSpeaking]);
@@ -908,27 +750,110 @@ const ChatItem = ({
         transition: "all 0.3s ease",
       }}
     >
-      <Avatar
-        sx={{
-          width: { xs: 28, sm: 32 },
-          height: { xs: 28, sm: 32 },
-          ml: 0,
-          bgcolor: "transparent",
-          flexShrink: 0,
-        }}
-      >
-        <img
-          src="/si-logo.png"
-          alt="SI Super Intelligence"
-          width="28px"
-          height="28px"
-          style={{
+      {agent === "nova" ? (
+        <Box
+          sx={{
+            width: { xs: 28, sm: 34 },
+            height: { xs: 28, sm: 34 },
             borderRadius: "50%",
-            filter: "drop-shadow(0 0 5px rgba(0, 255, 252, 0.5))",
+            background:
+              "linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #06b6d4 100%)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            fontSize: "14px",
+            boxShadow: "0 0 14px rgba(168, 85, 247, 0.5)",
+            flexShrink: 0,
           }}
-        />
-      </Avatar>
+        >
+          ✨
+        </Box>
+      ) : agent === "aura" ? (
+        <Box
+          sx={{
+            width: { xs: 28, sm: 34 },
+            height: { xs: 28, sm: 34 },
+            borderRadius: "50%",
+            background: "linear-gradient(135deg, #f59e0b 0%, #ec4899 100%)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            fontSize: "14px",
+            boxShadow: "0 0 14px rgba(245, 158, 11, 0.5)",
+            flexShrink: 0,
+          }}
+        >
+          🎨
+        </Box>
+      ) : agent === "sage" ? (
+        <Box
+          sx={{
+            width: { xs: 28, sm: 34 },
+            height: { xs: 28, sm: 34 },
+            borderRadius: "50%",
+            background: "linear-gradient(135deg, #10b981 0%, #06b6d4 100%)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            fontSize: "14px",
+            boxShadow: "0 0 14px rgba(16, 185, 129, 0.5)",
+            flexShrink: 0,
+          }}
+        >
+          🌿
+        </Box>
+      ) : (
+        <Avatar
+          sx={{
+            width: { xs: 28, sm: 32 },
+            height: { xs: 28, sm: 32 },
+            ml: 0,
+            bgcolor: "transparent",
+            flexShrink: 0,
+          }}
+        >
+          <img
+            src="/si-logo.png"
+            alt="SI Super Intelligence"
+            width="28px"
+            height="28px"
+            style={{
+              borderRadius: "50%",
+              filter: "drop-shadow(0 0 5px rgba(0, 255, 252, 0.5))",
+            }}
+          />
+        </Avatar>
+      )}
       <Box sx={{ width: "100%", overflowX: "auto" }}>
+        {agent && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.6 }}>
+            <Typography
+              sx={{
+                fontSize: "12px",
+                fontWeight: 700,
+                color:
+                  agent === "nova"
+                    ? isDark ? "#c084fc" : "#7e22ce"
+                    : agent === "aura"
+                    ? isDark ? "#fbbf24" : "#d97706"
+                    : agent === "sage"
+                    ? isDark ? "#34d399" : "#059669"
+                    : isDark ? "#00fffc" : "#0284c7",
+              }}
+            >
+              {agent === "nova"
+                ? "Nova (Conversational Companion)"
+                : agent === "aura"
+                ? "Aura (Creative & Storyteller)"
+                : agent === "sage"
+                ? "Sage (Life & Wisdom Mentor)"
+                : "Nexus (Super Intelligence)"}
+            </Typography>
+          </Box>
+        )}
         {attachedFileName && (
           <Box
             sx={{
@@ -966,21 +891,7 @@ const ChatItem = ({
           messageBlocks.length &&
           messageBlocks.map((block, idx) =>
             isCodeBlock(block) ? (
-              <SyntaxHighlighter
-                key={idx}
-                style={coldarkDark}
-                language="javascript"
-                customStyle={{
-                  fontSize: "13px",
-                  borderRadius: "8px",
-                  margin: "8px 0",
-                  padding: "10px",
-                  maxWidth: "100%",
-                  overflowX: "auto",
-                }}
-              >
-                {block}
-              </SyntaxHighlighter>
+              <CodeBlockItem key={idx} code={block} isDark={isDark} />
             ) : (
               <Typography
                 key={idx}
@@ -1023,6 +934,8 @@ const ChatItem = ({
                   ? isDark ? "#00fffc" : "#0284c7"
                   : isDark ? "rgba(255, 255, 255, 0.55)" : "#64748b",
                 p: 0.5,
+                touchAction: "manipulation",
+                WebkitTapHighlightColor: "transparent",
                 ":hover": {
                   color: isDark ? "#00fffc" : "#0284c7",
                   bgcolor: isDark ? "rgba(0, 255, 252, 0.1)" : "rgba(2, 132, 199, 0.1)",
@@ -1049,6 +962,8 @@ const ChatItem = ({
                   ? isDark ? "#00fffc" : "#0284c7"
                   : isDark ? "rgba(255, 255, 255, 0.55)" : "#64748b",
                 p: 0.5,
+                touchAction: "manipulation",
+                WebkitTapHighlightColor: "transparent",
                 ":hover": {
                   color: isDark ? "#00fffc" : "#0284c7",
                   bgcolor: isDark ? "rgba(0, 255, 252, 0.1)" : "rgba(2, 132, 199, 0.1)",
@@ -1073,6 +988,8 @@ const ChatItem = ({
                   ? isDark ? "#00fffc" : "#0284c7"
                   : isDark ? "rgba(255, 255, 255, 0.55)" : "#64748b",
                 p: 0.5,
+                touchAction: "manipulation",
+                WebkitTapHighlightColor: "transparent",
                 ":hover": {
                   color: isDark ? "#00fffc" : "#0284c7",
                   bgcolor: isDark ? "rgba(0, 255, 252, 0.1)" : "rgba(2, 132, 199, 0.1)",
@@ -1093,6 +1010,8 @@ const ChatItem = ({
                   ? "#ff5252"
                   : isDark ? "rgba(255, 255, 255, 0.55)" : "#64748b",
                 p: 0.5,
+                touchAction: "manipulation",
+                WebkitTapHighlightColor: "transparent",
                 ":hover": {
                   color: "#ff5252",
                   bgcolor: "rgba(255, 82, 82, 0.1)",
@@ -1111,6 +1030,8 @@ const ChatItem = ({
               sx={{
                 color: isDark ? "rgba(255, 255, 255, 0.55)" : "#64748b",
                 p: 0.5,
+                touchAction: "manipulation",
+                WebkitTapHighlightColor: "transparent",
                 transition: "all 0.2s ease",
                 ":hover": {
                   color: isDark ? "#00fffc" : "#0284c7",
@@ -1137,6 +1058,8 @@ const ChatItem = ({
                 px: 1.1,
                 py: 0.35,
                 borderRadius: "6px",
+                touchAction: "manipulation",
+                WebkitTapHighlightColor: "transparent",
                 border: isDark
                   ? "1px solid rgba(255, 255, 255, 0.16)"
                   : "1px solid rgba(15, 23, 42, 0.15)",
