@@ -193,7 +193,7 @@ const SUGGESTIONS = [
 
 const Chat = () => {
   const navigate = useNavigate();
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const auth = useAuth();
@@ -250,6 +250,15 @@ const Chat = () => {
         top: 0,
         behavior: "smooth",
       });
+    }
+  };
+
+  const handleInputResize = () => {
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+      const scrollHeight = inputRef.current.scrollHeight;
+      const maxHeight = 130;
+      inputRef.current.style.height = `${Math.min(Math.max(scrollHeight, 24), maxHeight)}px`;
     }
   };
 
@@ -348,6 +357,7 @@ const Chat = () => {
           const base = existingText ? existingText.trim() + " " : "";
           const fullSpoken = (finalTranscript + interimTranscript).trim();
           inputRef.current.value = (base + fullSpoken).trimStart();
+          handleInputResize();
           inputRef.current.focus();
         }
       };
@@ -436,6 +446,7 @@ const Chat = () => {
     }
     if (inputRef.current) {
       inputRef.current.value = "";
+      inputRef.current.style.height = "auto";
       inputRef.current.focus();
     }
     toast.success("Fresh new chat started! What can I help you with?", {
@@ -461,6 +472,7 @@ const Chat = () => {
       setSelectedFile(null);
       if (inputRef.current) {
         inputRef.current.value = "";
+        inputRef.current.style.height = "auto";
       }
     } catch (error: unknown) {
       console.error(error);
@@ -519,6 +531,7 @@ const Chat = () => {
 
     if (inputRef.current) {
       inputRef.current.value = "";
+      inputRef.current.style.height = "auto";
     }
     if (isListening && recognitionRef.current) {
       try {
@@ -588,8 +601,11 @@ const Chat = () => {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>
+  ) => {
     if (e.key === "Enter" && !e.shiftKey) {
+      if ((e.nativeEvent as any)?.isComposing) return;
       e.preventDefault();
       handleSubmit();
     }
@@ -1283,7 +1299,8 @@ const Chat = () => {
           boxShadow: isDark ? "0 8px 32px rgba(0, 0, 0, 0.35)" : "0 10px 30px rgba(15, 23, 42, 0.06)",
           p: { xs: 1.2, sm: 1.6, md: 2 },
           boxSizing: "border-box",
-          transition: "all 0.3s ease",
+          transition:
+            "background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease",
         }}
       >
         {/* Top bar with Current Topic Badge & Sidebar Toggle */}
@@ -1396,7 +1413,7 @@ const Chat = () => {
             overflowY: "auto",
             scrollBehavior: "smooth",
             p: 2,
-            transition: "all 0.3s ease",
+            transition: "background-color 0.2s ease, border-color 0.2s ease",
           }}
         >
           {isLoadingSession ? (
@@ -1501,6 +1518,7 @@ const Chat = () => {
                     onClick={() => {
                       if (inputRef.current) {
                         inputRef.current.value = item.prompt;
+                        handleInputResize();
                         inputRef.current.focus();
                       }
                     }}
@@ -1613,7 +1631,16 @@ const Chat = () => {
             boxShadow: isDark
               ? "0 4px 20px rgba(0,0,0,0.3)"
               : "0 4px 16px rgba(2, 132, 199, 0.08)",
-            transition: "all 0.3s ease",
+            transition:
+              "background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease",
+            "&:focus-within": {
+              borderColor: isDark
+                ? "rgba(0, 255, 252, 0.6)"
+                : "rgba(2, 132, 199, 0.6)",
+              boxShadow: isDark
+                ? "0 0 16px rgba(0, 255, 252, 0.15)"
+                : "0 4px 20px rgba(2, 132, 199, 0.15)",
+            },
           }}
         >
           {/* Selected File Chip */}
@@ -1671,8 +1698,10 @@ const Chat = () => {
           <Box
             sx={{
               display: "flex",
-              alignItems: "center",
+              alignItems: "flex-end",
               width: "100%",
+              py: { xs: 0.4, sm: 0.6 },
+              px: { xs: 0.3, sm: 0.6 },
             }}
           >
             {/* Attachment Button */}
@@ -1686,8 +1715,9 @@ const Chat = () => {
                   : isDark
                   ? "rgba(255,255,255,0.7)"
                   : "#64748b",
-                mx: { xs: 0.2, sm: 0.8 },
+                mx: { xs: 0.2, sm: 0.5 },
                 p: { xs: 0.8, sm: 1 },
+                mb: { xs: "2px", sm: "4px" },
                 ":hover": { color: isDark ? "#00fffc" : "#0284c7" },
               }}
               title="Upload PDF, Image, or ZIP"
@@ -1704,10 +1734,15 @@ const Chat = () => {
             />
 
             <Box
-              component="input"
+              component="textarea"
               ref={inputRef}
-              type="text"
+              rows={1}
               onKeyDown={handleKeyDown}
+              onInput={handleInputResize}
+              enterKeyHint="send"
+              autoCapitalize="sentences"
+              autoComplete="off"
+              spellCheck={true}
               placeholder={
                 selectedFile
                   ? `Ask about ${selectedFile.name}...`
@@ -1716,18 +1751,40 @@ const Chat = () => {
                   : "Ask a question (Press Enter to send)..."
               }
               sx={{
+                flex: 1,
                 width: "100%",
                 bgcolor: "transparent",
-                py: { xs: 1.2, sm: 1.6 },
+                py: { xs: 0.8, sm: 1.1 },
                 px: { xs: 0.5, sm: 0.8 },
                 border: "none",
                 outline: "none",
                 color: isDark ? "white" : "#0f172a",
                 fontSize: "16px",
                 fontFamily: "inherit",
+                lineHeight: 1.45,
+                resize: "none",
+                minHeight: "24px",
+                maxHeight: "130px",
+                overflowY: "auto",
+                caretColor: isDark ? "#00fffc" : "#0284c7",
+                touchAction: "auto !important",
+                WebkitUserSelect: "text !important",
+                userSelect: "text !important",
+                textRendering: "auto !important",
+                fontFeatureSettings: "normal !important",
+                WebkitAppearance: "none",
                 "&::placeholder": {
                   color: isDark ? "rgba(255, 255, 255, 0.45)" : "#64748b",
                   opacity: 1,
+                },
+                "&::-webkit-scrollbar": {
+                  width: "4px",
+                },
+                "&::-webkit-scrollbar-thumb": {
+                  bgcolor: isDark
+                    ? "rgba(0, 255, 252, 0.2)"
+                    : "rgba(2, 132, 199, 0.2)",
+                  borderRadius: "2px",
                 },
               }}
             />
@@ -1750,6 +1807,7 @@ const Chat = () => {
                   bgcolor: isListening ? "#ef4444" : "#1d72f2",
                   color: "white",
                   mx: { xs: 0.3, sm: 0.6 },
+                  mb: { xs: "6px", sm: "8px" },
                   p: 0,
                   flexShrink: 0,
                   display: "flex",
@@ -1836,8 +1894,9 @@ const Chat = () => {
               disabled={isSending}
               sx={{
                 color: isDark ? "#00fffc" : "#0284c7",
-                mx: { xs: 0.2, sm: 0.8 },
+                mx: { xs: 0.2, sm: 0.5 },
                 p: { xs: 0.8, sm: 1 },
+                mb: { xs: "2px", sm: "4px" },
                 ":hover": {
                   bgcolor: isDark
                     ? "rgba(0, 255, 252, 0.1)"

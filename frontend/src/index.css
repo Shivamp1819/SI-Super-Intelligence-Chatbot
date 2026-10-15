@@ -49,8 +49,24 @@ img, svg, video {
   display: block;
 }
 
-button, a, input, select, textarea {
+button, a, select {
   touch-action: manipulation;
+}
+
+/* Ensure smooth typing, zero input lag, and buttery smooth caret / cursor navigation on mobile devices */
+input, textarea {
+  touch-action: auto !important;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  text-rendering: auto !important;
+  font-feature-settings: normal !important;
+  font-family: inherit;
+  caret-color: #00fffc;
+}
+
+body.light-mode input,
+body.light-mode textarea {
+  caret-color: #0284c7;
 }
 
 .image-inverted {
