@@ -124,7 +124,7 @@ export const RobotCompanionBox: React.FC = () => {
         }
       },
       onError: () => setIsSpeaking(false),
-      pitchMultiplier: 1.02,
+      pitchMultiplier: 1.0,
       rateMultiplier: speedMultiplier,
     });
   };
@@ -714,7 +714,7 @@ export const RobotCompanionBox: React.FC = () => {
                       onStart: () => setIsSpeaking(true),
                       onEnd: () => setIsSpeaking(false),
                       onError: () => setIsSpeaking(false),
-                      pitchMultiplier: 1.02,
+                      pitchMultiplier: 1.0,
                       rateMultiplier: speedMultiplier,
                     }
                   );

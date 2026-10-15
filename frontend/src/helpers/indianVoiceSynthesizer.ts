@@ -144,11 +144,11 @@ export const getBestIndianFemaleVoice = (
   if (isHindi) {
     const hindiFemaleNames = [
       "swara online (natural)", // Azure Neural Swara (top tier natural Hindi female)
+      "swara",
       "kavya online (natural)",
+      "kavya",
       "ananya online (natural)",
       "sunita online (natural)",
-      "swara",
-      "kavya",
       "google हिन्दी",
       "google hindi",
       "hi-in-x-cfn",
@@ -179,22 +179,20 @@ export const getBestIndianFemaleVoice = (
   }
 
   // 2. English & Hinglish (Romanized Hindi)
-  // Ranked Indian English/Hinglish female voices (Neerja, Google English India, Heera, Veena)
-  const indianFemaleNames = [
-    "neerja online (natural)", // Azure Neural Neerja: sweet, crystal clear, melodious, perfect real Indian girl voice
+  // Strictly prioritize authentic Indian English female voices:
+  const indianFemaleKeywords = [
+    "neerja online (natural)", // Azure Neural Neerja: #1 sweet, crystal clear real Indian girl voice
     "neerja",
-    "google english (india)", // Chrome Indian female voice
+    "microsoft heera", // Windows en-IN female (Heera)
+    "heera",
+    "mstts_v110_enin_heera",
+    "veena", // Apple/iOS Veena (English India)
+    "google english (india)",
+    "en-in-x-end", // Android Google TTS Indian female
+    "en-in-x-ene",
+    "en-in-x-cxx",
     "kavya online (natural)",
     "swara online (natural)",
-    "swara",
-    "heera online",
-    "heera", // Microsoft Heera (Windows en-IN female)
-    "mstts_v110_enin_heera",
-    "veena", // Apple/Microsoft Veena (English India)
-    "google हिन्दी",
-    "en-in-x-cxx",
-    "en-in-x-end",
-    "en-in-x-ene",
     "kalyani",
     "priya",
     "ananya",
@@ -206,30 +204,37 @@ export const getBestIndianFemaleVoice = (
     "meera",
   ];
 
-  for (const target of indianFemaleNames) {
+  for (const target of indianFemaleKeywords) {
     const match = voicesList.find((v) => {
       const name = v.name.toLowerCase();
+      const lang = (v.lang || "").toLowerCase().replace("_", "-");
+      // CRITICAL: NEVER match google hindi or hi-IN for English/Hinglish text!
+      const isPureHindi = lang.startsWith("hi") || name.includes("हिन्दी") || name.includes("hindi");
+      if (isPureHindi) return false;
       return name.includes(target) && !isMaleVoice(name);
     });
     if (match) return { voice: match, lang: match.lang || "en-IN" };
   }
 
-  // Any voice with 'en-IN' locale that is female
+  // Any non-male voice with 'en-IN' locale that is NOT pure Hindi
   const enInFemale = voicesList.find((v) => {
     const lang = v.lang.toLowerCase().replace("_", "-");
+    const name = v.name.toLowerCase();
     const isEnIn = lang === "en-in" || lang.startsWith("en-in");
-    return isEnIn && !isMaleVoice(v.name);
+    const isPureHindi = name.includes("हिन्दी") || name.includes("hindi");
+    return isEnIn && !isPureHindi && !isMaleVoice(name);
   });
   if (enInFemale) return { voice: enInFemale, lang: enInFemale.lang || "en-IN" };
 
-  // Any voice with 'india' or 'indian' in name
+  // Any voice with 'india' or 'indian' in name and 'en' in lang
   const indiaNamed = voicesList.find((v) => {
     const name = v.name.toLowerCase();
-    return (name.includes("india") || name.includes("indian")) && !isMaleVoice(name);
+    const lang = v.lang.toLowerCase();
+    return (name.includes("india") || name.includes("indian")) && lang.startsWith("en") && !isMaleVoice(name);
   });
   if (indiaNamed) return { voice: indiaNamed, lang: indiaNamed.lang || "en-IN" };
 
-  // Sweet natural female global fallbacks (if no Indian voices installed on user OS)
+  // Sweet natural female global fallbacks (if no Indian voices installed on user's specific browser)
   const sweetGlobalFallbacks = [
     "jenny online (natural)",
     "aria online (natural)",
@@ -239,7 +244,6 @@ export const getBestIndianFemaleVoice = (
     "victoria",
     "karen",
     "zira",
-    "female",
   ];
 
   for (const target of sweetGlobalFallbacks) {
@@ -247,7 +251,7 @@ export const getBestIndianFemaleVoice = (
       const name = v.name.toLowerCase();
       return name.includes(target) && !isMaleVoice(name);
     });
-    if (match) return { voice: match, lang: match.lang || "en-IN" };
+    if (match) return { voice: match, lang: match.lang || "en-US" };
   }
 
   // Any non-male English voice
@@ -255,7 +259,7 @@ export const getBestIndianFemaleVoice = (
     const isEn = v.lang.toLowerCase().startsWith("en");
     return isEn && !isMaleVoice(v.name);
   });
-  if (nonMaleEn) return { voice: nonMaleEn, lang: nonMaleEn.lang || "en-IN" };
+  if (nonMaleEn) return { voice: nonMaleEn, lang: nonMaleEn.lang || "en-US" };
 
   const anyFemale = voicesList.find((v) => !isMaleVoice(v.name));
   return { voice: anyFemale || voicesList[0] || null, lang: isHindi ? "hi-IN" : "en-IN" };
@@ -423,15 +427,19 @@ export const speakWithIndianFemaleVoice = async (
     return;
   }
 
-  // Real Indian Female ChatGPT Agent Calibration:
-  // - Pitch: 1.24 for English/Hinglish, 1.20 for Hindi (warm, sweet, realistic young Indian woman tone)
-  // - Rate: 1.20 for English/Hinglish, 1.18 for Hindi (brisk, energetic, fluid conversational tempo)
-  // - Volume: 1.0 (loud, crystal clear, noise-free)
-  const basePitch = isHindi ? 1.20 : 1.24;
-  const baseRate = isHindi ? 1.18 : 1.20;
+  // Authentic, High, Sweet Indian Female Voice Calibration:
+  // - Studio Neural/Online voices (Neerja, Swara, Jenny): Pitch 1.01 (pure studio vocoder, sweet clarity)
+  // - Standard native voices (Heera, Veena, Google UK): Pitch 1.05 (natural, bright, sweet feminine lift without chipmunk/robotic distortion)
+  // - Rate: 1.08 (fluent, lively, human conversational tempo)
+  const isNeuralVoice =
+    voice?.name.toLowerCase().includes("natural") ||
+    voice?.name.toLowerCase().includes("online") ||
+    voice?.name.toLowerCase().includes("neural");
+  const basePitch = isNeuralVoice ? 1.01 : 1.05;
+  const baseRate = 1.08;
 
-  const finalPitch = Math.min(Math.max(basePitch * (options.pitchMultiplier || 1.0), 0.8), 1.5);
-  const finalRate = Math.min(Math.max(baseRate * (options.rateMultiplier || 1.0), 0.7), 1.5);
+  const finalPitch = Math.min(Math.max(basePitch * (options.pitchMultiplier || 1.0), 0.8), 1.2);
+  const finalRate = Math.min(Math.max(baseRate * (options.rateMultiplier || 1.0), 0.7), 1.4);
 
   let currentChunkIndex = 0;
   let hasStarted = false;
