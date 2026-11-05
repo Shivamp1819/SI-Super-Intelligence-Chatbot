@@ -52,6 +52,10 @@ import {
 } from "../helpers/api-communicator";
 import toast from "react-hot-toast";
 import RobotCompanionBox from "../components/chat/RobotCompanionBox";
+import {
+  speakWithIndianFemaleVoice,
+  stopSpeaking,
+} from "../helpers/indianVoiceSynthesizer";
 
 type Message = {
   role: "user" | "assistant";
@@ -445,6 +449,7 @@ const Chat = () => {
    * - Focuses input field
    */
   const handleNewChat = () => {
+    stopSpeaking();
     setCurrentConversationId(null);
     setCurrentTopic("New Chat");
     setChatMessages([]);
@@ -457,6 +462,10 @@ const Chat = () => {
       inputRef.current.style.height = "auto";
       inputRef.current.focus();
     }
+    // Greet user with the sweet Indian lady voice when a new conversation starts!
+    speakWithIndianFemaleVoice(
+      "नमस्ते! नया चैट शुरू हो गया है। आप मुझसे कुछ भी पूछ सकते हैं!"
+    );
   };
 
   /**
@@ -466,6 +475,7 @@ const Chat = () => {
    */
   const handleSelectConversation = async (convId: string) => {
     if (convId === currentConversationId) return;
+    stopSpeaking();
 
     try {
       setIsLoadingSession(true);

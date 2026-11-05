@@ -61,13 +61,13 @@ const NOVA_PERSONA: RobotPersona = {
   glowColor: "rgba(168, 85, 247, 0.5)",
   avatarIcon: "✨",
   greeting:
-    "Namaste, main aapki kaise madad kar sakti hoon? / Hello, how may I help you?",
+    "नमस्ते! मैं नोवा हूँ, आपकी AI साथी। मैं आपकी कैसे मदद कर सकती हूँ? Tell me anything, I'm right here listening!",
   starters: [
-    "Aaj ka din thoda busy tha, let's talk and relax!",
-    "How are you doing today? Kuch mazedaar baat batao!",
     "नमस्ते! आप कैसी हैं? मुझे कुछ अच्छी बातें बताइए",
+    "How are you doing today? Kuch mazedaar baat batao!",
+    "Aaj ka din thoda busy tha, let's talk and relax!",
     "I need a little positivity & motivation right now",
-    "Dil khol kar baat karte hain — ask me something curious!",
+    "Dil khol kar बात karte hain — ask me something curious!",
   ],
 };
 
@@ -253,13 +253,15 @@ export const RobotCompanionBox: React.FC = () => {
   const resetConversation = () => {
     stopSpeaking();
     setRobotConversationId(null);
-    setMessages([
-      {
-        role: "assistant",
-        content: currentPersona.greeting,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      },
-    ]);
+    const welcomeMsg: Message = {
+      role: "assistant",
+      content: currentPersona.greeting,
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    };
+    setMessages([welcomeMsg]);
+    if (autoSpeak) {
+      speakRobotMessage("नमस्ते! नई बातचीत शुरू हो गई है। आप क्या पूछना चाहते हैं?");
+    }
     toast.success("New conversation started with your Robot Companion!", { icon: "🤖" });
   };
 
@@ -344,6 +346,11 @@ export const RobotCompanionBox: React.FC = () => {
           onClick={() => {
             setIsOpen(true);
             setIsHovered(false);
+            if (autoSpeak && messages.length <= 1) {
+              speakRobotMessage(
+                "नमस्ते! मैं नोवा हूँ, आपकी AI साथी। मैं आपकी कैसे मदद कर सकती हूँ? Tell me anything, I'm right here!"
+              );
+            }
           }}
         >
           {/* Short clean callout */}
@@ -709,7 +716,7 @@ export const RobotCompanionBox: React.FC = () => {
                     return;
                   }
                   previewIndianFemaleVoice(
-                    "Namaste, main aapki kaise madad kar sakti hoon? Hello, how may I help you?",
+                    "नमस्ते! मैं आपकी AI साथी हूँ। मैं हिंदी और इंग्लिश दोनों बहुत अच्छी तरह बोल सकती हूँ। Hello! How may I help you today?",
                     {
                       onStart: () => setIsSpeaking(true),
                       onEnd: () => setIsSpeaking(false),

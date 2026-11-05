@@ -130,7 +130,15 @@ const isMaleVoice = (name: string): boolean => {
 
 /**
  * Selects the sweetest, most natural, human-like Indian female voice available.
- * Prioritizes Microsoft Neural (Neerja, Swara, Kavya), Google हिन्दी, Google English (India), Heera, and Veena.
+ * Prioritizes:
+ * 1. Google हिन्दी / Google Hindi (the exact voice tested & loved on Chrome/Android)
+ * 2. Microsoft Swara Online (Natural) - Hindi (India) (Azure Neural)
+ * 3. Microsoft Neerja Online (Natural) - English (India) (Azure Neural)
+ * 4. Microsoft Kalpana - Hindi (India) (Windows desktop)
+ * 5. Microsoft Heera - English (India) (Windows desktop)
+ * 6. Apple Lekha (Hindi) & Veena (English India)
+ * 7. Android TTS Indian female voices (hi-in-x-cfn, en-in-x-end)
+ * 8. Any voice containing en-in or hi-in
  */
 export const getBestIndianFemaleVoice = (
   voicesList: SpeechSynthesisVoice[],
@@ -140,26 +148,32 @@ export const getBestIndianFemaleVoice = (
     return { voice: null, lang: isHindi ? "hi-IN" : "en-IN" };
   }
 
-  // 1. If text is Devanagari Hindi (हिंदी)
+  // 1. If text contains Devanagari Hindi (हिंदी)
   if (isHindi) {
     const hindiFemaleNames = [
+      "google हिन्दी", // Exact voice tested & loved by user on Chrome/Android
+      "google hindi",
       "swara online (natural)", // Azure Neural Swara (top tier natural Hindi female)
       "swara",
+      "kalpana", // Microsoft Kalpana (Hindi India)
       "kavya online (natural)",
       "kavya",
       "ananya online (natural)",
       "sunita online (natural)",
-      "google हिन्दी",
-      "google hindi",
       "hi-in-x-cfn",
       "hi-in-x-hie",
-      "kalpana", // Microsoft Kalpana (Hindi India)
       "lekha", // Apple Lekha
       "ananya",
       "priya",
       "pooja",
       "shruti",
       "sangeeta",
+      // Secondary Indian English voices that can pronounce Hindi text
+      "neerja online (natural)",
+      "neerja",
+      "microsoft heera",
+      "heera",
+      "veena",
     ];
 
     for (const target of hindiFemaleNames) {
@@ -167,7 +181,7 @@ export const getBestIndianFemaleVoice = (
         const name = v.name.toLowerCase();
         return name.includes(target) && !isMaleVoice(name);
       });
-      if (match) return { voice: match, lang: match.lang || "hi-IN" };
+      if (match) return { voice: match, lang: "hi-IN" };
     }
 
     // Any non-male hi-IN / hi_IN voice
@@ -179,20 +193,28 @@ export const getBestIndianFemaleVoice = (
   }
 
   // 2. English & Hinglish (Romanized Hindi)
-  // Strictly prioritize authentic Indian English female voices:
-  const indianFemaleKeywords = [
-    "neerja online (natural)", // Azure Neural Neerja: #1 sweet, crystal clear real Indian girl voice
+  // Ensure the SAME sweet Indian lady voice is used for English & Hinglish!
+  // We NEVER fall back to US/UK Western voices if ANY Indian voice exists!
+  const indianFemalePriority = [
+    "google हिन्दी", // Exactly what the user tested and loved on Chrome/Android
+    "google hindi",
+    "swara online (natural)", // Edge Neural Swara
+    "swara",
+    "neerja online (natural)", // Edge Neural Neerja
     "neerja",
-    "microsoft heera", // Windows en-IN female (Heera)
+    "microsoft heera", // Windows en-IN Heera
     "heera",
+    "kalpana", // Windows hi-IN Kalpana
     "mstts_v110_enin_heera",
-    "veena", // Apple/iOS Veena (English India)
+    "veena", // Apple en-IN Veena
+    "lekha", // Apple hi-IN Lekha
     "google english (india)",
-    "en-in-x-end", // Android Google TTS Indian female
+    "en-in-x-end",
     "en-in-x-ene",
     "en-in-x-cxx",
+    "hi-in-x-cfn",
+    "hi-in-x-hie",
     "kavya online (natural)",
-    "swara online (natural)",
     "kalyani",
     "priya",
     "ananya",
@@ -204,37 +226,46 @@ export const getBestIndianFemaleVoice = (
     "meera",
   ];
 
-  for (const target of indianFemaleKeywords) {
+  for (const target of indianFemalePriority) {
     const match = voicesList.find((v) => {
       const name = v.name.toLowerCase();
-      const lang = (v.lang || "").toLowerCase().replace("_", "-");
-      // CRITICAL: NEVER match google hindi or hi-IN for English/Hinglish text!
-      const isPureHindi = lang.startsWith("hi") || name.includes("हिन्दी") || name.includes("hindi");
-      if (isPureHindi) return false;
       return name.includes(target) && !isMaleVoice(name);
     });
-    if (match) return { voice: match, lang: match.lang || "en-IN" };
+    if (match) {
+      const vLang = (match.lang || "").toLowerCase().replace("_", "-");
+      // If voice has en-IN locale use en-IN; if voice is Google हिन्दी (hi-IN), keep hi-IN so Chrome doesn't switch!
+      const langToUse = vLang.startsWith("en-in") ? (match.lang || "en-IN") : "hi-IN";
+      return { voice: match, lang: langToUse };
+    }
   }
 
-  // Any non-male voice with 'en-IN' locale that is NOT pure Hindi
+  // Any non-male voice with 'en-IN' locale
   const enInFemale = voicesList.find((v) => {
     const lang = v.lang.toLowerCase().replace("_", "-");
     const name = v.name.toLowerCase();
-    const isEnIn = lang === "en-in" || lang.startsWith("en-in");
-    const isPureHindi = name.includes("हिन्दी") || name.includes("hindi");
-    return isEnIn && !isPureHindi && !isMaleVoice(name);
+    return (lang === "en-in" || lang.startsWith("en-in")) && !isMaleVoice(name);
   });
   if (enInFemale) return { voice: enInFemale, lang: enInFemale.lang || "en-IN" };
 
-  // Any voice with 'india' or 'indian' in name and 'en' in lang
+  // Any non-male voice with 'hi-IN' locale
+  const hiInFemale = voicesList.find((v) => {
+    const lang = v.lang.toLowerCase().replace("_", "-");
+    const name = v.name.toLowerCase();
+    return (lang === "hi-in" || lang.startsWith("hi")) && !isMaleVoice(name);
+  });
+  if (hiInFemale) return { voice: hiInFemale, lang: hiInFemale.lang || "hi-IN" };
+
+  // Any voice with 'india' or 'indian' or 'hindi' in name
   const indiaNamed = voicesList.find((v) => {
     const name = v.name.toLowerCase();
-    const lang = v.lang.toLowerCase();
-    return (name.includes("india") || name.includes("indian")) && lang.startsWith("en") && !isMaleVoice(name);
+    return (
+      (name.includes("india") || name.includes("indian") || name.includes("hindi") || name.includes("हिन्दी")) &&
+      !isMaleVoice(name)
+    );
   });
   if (indiaNamed) return { voice: indiaNamed, lang: indiaNamed.lang || "en-IN" };
 
-  // Sweet natural female global fallbacks (if no Indian voices installed on user's specific browser)
+  // Sweet natural female global fallbacks (ONLY if no Indian voice exists on device)
   const sweetGlobalFallbacks = [
     "jenny online (natural)",
     "aria online (natural)",
@@ -267,12 +298,11 @@ export const getBestIndianFemaleVoice = (
 
 /**
  * Cleans text for ultra-fluid, natural, ChatGPT-like conversational speech:
- * - REMOVES commas, semicolons, colons, and dashes: In Web Speech API, commas cause
- *   long 400ms-600ms dead silences. By replacing them with a space, speech flows
- *   continuously and connectedly with authentic human coarticulation!
- * - Normalizes full stops into crisp, natural breath transitions without lagging.
- * - Strips emojis, markdown, URLs, and code blocks.
- * - Expands acronyms smoothly without stuttering periods (e.g. AI -> AI, ML -> ML).
+ * - PRESERVES commas and Hindi danda (।) for natural, human breathing pauses
+ * - REPLACES slashes, backslashes, and pipes with clean sentence pauses so the voice NEVER says "slash" out loud
+ * - Normalizes colons, semicolons, and dashes into gentle pauses
+ * - Strips emojis, markdown, URLs, code blocks, and formatting asterisks
+ * - Expands acronyms smoothly without stuttering periods (e.g. AI -> AI, ML -> ML)
  */
 export const cleanTextForSpeech = (rawText: string): string => {
   if (!rawText) return "";
@@ -294,7 +324,19 @@ export const cleanTextForSpeech = (rawText: string): string => {
     .replace(/^[-*•+]\s+/gm, "")
     .replace(/^\d+[.)]\s+/gm, "")
     .replace(/^>\s+/gm, "")
-    .replace(/[*_~`>#|\\^{}[\]()]/g, "")
+    // Remove markdown formatting wrappers: **bold**, *italic*, ~~strike~~, __underline__
+    .replace(/\*{1,3}([^*]+)\*{1,3}/g, "$1")
+    .replace(/_{1,3}([^_]+)_{1,3}/g, "$1")
+    .replace(/~{1,2}([^~]+)~{1,2}/g, "$1")
+    // Strip raw brackets and symbols that cause clicks or robotic artifacts
+    .replace(/[*_~`>#^{}[\]()]/g, " ")
+    // CRITICAL: Replace forward slashes, backslashes, and pipes with clean sentence pauses
+    // Prevents voices from literally saying "slash" out loud (e.g. "Hindi / English" -> "Hindi. English")
+    .replace(/\s*[/\\|]\s*/g, ". ")
+    // Convert colons and semicolons into natural pause commas
+    .replace(/[;:]/g, ", ")
+    // Convert em-dashes and hyphens into slight pause
+    .replace(/\s*[–—]\s*/g, ", ")
     // Smooth pronunciation helpers: remove dots from acronyms so they don't cause period pauses
     .replace(/\bA\.I\.\b|\bAI\b/g, "AI")
     .replace(/\bM\.L\.\b|\bML\b/g, "ML")
@@ -306,17 +348,15 @@ export const cleanTextForSpeech = (rawText: string): string => {
     .replace(/\betc\.\b/gi, "and so on")
     .replace(/&/g, " and ")
     .replace(/%/g, " percent ")
-    // CRITICAL: Replace commas, semicolons, colons, dashes, and ellipses with spaces!
-    // This directly fixes the issue where the voice takes a long time pausing at commas.
-    // Instead of stopping for 500ms, words now flow smoothly into each other like ChatGPT voice!
-    .replace(/[,;:–—]/g, " ")
-    .replace(/\.{2,}/g, " ")
-    .replace(/--+/g, " ")
+    // Ensure Hindi danda (।) has a following space for natural cadence
+    .replace(/।+/g, "। ")
+    // Normalize commas: Keep commas intact for natural human breathing pauses!
+    .replace(/,{2,}/g, ",")
     // Reduce multiple exclamation/question marks to single clean punctuation
     .replace(/!+/g, "!")
     .replace(/\?+/g, "?")
     // Normalize spaces and eliminate double periods
-    .replace(/\.\s*\./g, ".")
+    .replace(/\.{2,}/g, ".")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -428,18 +468,18 @@ export const speakWithIndianFemaleVoice = async (
   }
 
   // Authentic, High, Sweet Indian Female Voice Calibration:
-  // - Studio Neural/Online voices (Neerja, Swara, Jenny): Pitch 1.01 (pure studio vocoder, sweet clarity)
-  // - Standard native voices (Heera, Veena, Google UK): Pitch 1.05 (natural, bright, sweet feminine lift without chipmunk/robotic distortion)
-  // - Rate: 1.08 (fluent, lively, human conversational tempo)
+  // - Edge/Azure Neural voices (Swara, Neerja): Pitch 1.12 (sweet, crisp, youthful, feminine)
+  // - Google हिन्दी & desktop native voices (Kalpana, Heera, Veena, Lekha): Pitch 1.18 (sweet high pitch, bright and melodious)
+  // - Rate: 1.03 (clear, articulate, natural human conversational cadence)
   const isNeuralVoice =
     voice?.name.toLowerCase().includes("natural") ||
     voice?.name.toLowerCase().includes("online") ||
     voice?.name.toLowerCase().includes("neural");
-  const basePitch = isNeuralVoice ? 1.01 : 1.05;
-  const baseRate = 1.08;
+  const basePitch = isNeuralVoice ? 1.12 : 1.18;
+  const baseRate = 1.03;
 
-  const finalPitch = Math.min(Math.max(basePitch * (options.pitchMultiplier || 1.0), 0.8), 1.2);
-  const finalRate = Math.min(Math.max(baseRate * (options.rateMultiplier || 1.0), 0.7), 1.4);
+  const finalPitch = Math.min(Math.max(basePitch * (options.pitchMultiplier || 1.0), 0.8), 1.35);
+  const finalRate = Math.min(Math.max(baseRate * (options.rateMultiplier || 1.0), 0.7), 1.35);
 
   let currentChunkIndex = 0;
   let hasStarted = false;
@@ -563,7 +603,7 @@ export const speakWithIndianFemaleVoice = async (
  * Preview helper to immediately hear the real Indian female voice agent.
  */
 export const previewIndianFemaleVoice = async (
-  sampleText: string = "Namaste, main aapki kaise madad kar sakti hoon? Hello, how may I help you?",
+  sampleText: string = "नमस्ते! मैं आपकी AI साथी हूँ। मैं हिंदी और इंग्लिश दोनों बहुत अच्छी तरह बोल सकती हूँ। Hello! How may I help you today?",
   options: SpeakOptions = {}
 ) => {
   return speakWithIndianFemaleVoice(sampleText, options);
