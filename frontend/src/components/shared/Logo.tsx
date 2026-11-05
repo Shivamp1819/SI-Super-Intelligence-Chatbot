@@ -24,7 +24,7 @@ const Logo = () => {
         }}
       >
         <img
-          src="/si-logo.png"
+          src="/si-logo.svg"
           alt="SI Super Intelligence Logo"
           width={"34px"}
           height={"34px"}

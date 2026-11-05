@@ -1454,7 +1454,7 @@ const Chat = () => {
             >
               <Box
                 component="img"
-                src="/si-logo.png"
+                src="/si-logo.svg"
                 alt="SI Super Intelligence"
                 sx={{
                   width: { xs: 60, sm: 74 },

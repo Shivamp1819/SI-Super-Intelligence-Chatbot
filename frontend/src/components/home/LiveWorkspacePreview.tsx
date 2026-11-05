@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Box, Typography, IconButton, Tooltip } from "@mui/material";
 import { FiCopy, FiCheck, FiRotateCcw, FiZap } from "react-icons/fi";
 import { useThemeMode } from "../../context/ThemeContext";
+import { copyTextToClipboard } from "../../helpers/clipboard";
 
 interface CodeBlockProps {
   code: string;
@@ -11,8 +12,8 @@ interface CodeBlockProps {
 const SyntaxCodeBlock: React.FC<CodeBlockProps> = ({ code, isStreaming }) => {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(code);
+  const handleCopy = async () => {
+    await copyTextToClipboard(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

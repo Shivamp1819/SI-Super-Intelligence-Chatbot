@@ -74,7 +74,7 @@ export const resetUserPassword = async (
 };
 
 export const checkAuthStatus = async () => {
-  const res = await axios.get("/user/auth-status");
+  const res = await axios.get("/user/auth-status", { timeout: 4000 });
   if (res.status !== 200) {
     throw new Error("Unable to authenticate");
   }

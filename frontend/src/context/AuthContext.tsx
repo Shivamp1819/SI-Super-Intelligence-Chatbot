@@ -38,26 +38,69 @@ type UserAuth = {
 const AuthContext = createContext<UserAuth | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  // Instant hydration from local cache prevents blank screens on reload
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const saved = localStorage.getItem("si_user_data");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("si_auth_active") === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  // If user never logged in or explicitly logged out, isLoading is false immediately
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("si_auth_active") === "true";
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
+    let isMounted = true;
+
     async function checkStatus() {
       try {
         const data = await checkAuthStatus();
-        if (data) {
-          setUser({ email: data.email, name: data.name });
+        if (data && isMounted) {
+          const userData = { email: data.email, name: data.name };
+          setUser(userData);
           setIsLoggedIn(true);
+          try {
+            localStorage.setItem("si_auth_active", "true");
+            localStorage.setItem("si_user_data", JSON.stringify(userData));
+          } catch (_) {}
         }
       } catch (err) {
-        setIsLoggedIn(false);
-        setUser(null);
+        if (isMounted) {
+          setIsLoggedIn(false);
+          setUser(null);
+          try {
+            localStorage.removeItem("si_auth_active");
+            localStorage.removeItem("si_user_data");
+          } catch (_) {}
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     }
+
     checkStatus();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const login = async (
@@ -67,8 +110,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   ) => {
     const data = await loginUser(email, password, confirmPassword);
     if (data) {
-      setUser({ email: data.email, name: data.name });
+      const userData = { email: data.email, name: data.name };
+      setUser(userData);
       setIsLoggedIn(true);
+      try {
+        localStorage.setItem("si_auth_active", "true");
+        localStorage.setItem("si_user_data", JSON.stringify(userData));
+      } catch (_) {}
     }
   };
 
@@ -80,13 +128,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   ) => {
     const data = await signupUser(name, email, password, confirmPassword);
     if (data) {
-      setUser({ email: data.email, name: data.name });
+      const userData = { email: data.email, name: data.name };
+      setUser(userData);
       setIsLoggedIn(true);
+      try {
+        localStorage.setItem("si_auth_active", "true");
+        localStorage.setItem("si_user_data", JSON.stringify(userData));
+      } catch (_) {}
     }
   };
 
   const logout = async () => {
     try {
+      localStorage.removeItem("si_auth_active");
+      localStorage.removeItem("si_user_data");
       await logoutUser();
     } catch (e) {
       console.warn("Logout error:", e);

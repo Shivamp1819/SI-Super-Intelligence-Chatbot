@@ -6,13 +6,14 @@ import {
   Button,
   Chip,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
 import CustomizedInput from "../components/shared/CustomizedInput";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { sendOtp, verifyOtp } from "../helpers/api-communicator";
-import { FiCheckCircle } from "react-icons/fi";
+import { FiCheckCircle, FiEye, FiEyeOff } from "react-icons/fi";
 import DynamicRobot from "../components/robot/DynamicRobot";
 import { useThemeMode } from "../context/ThemeContext";
 
@@ -25,6 +26,8 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // OTP Verification states
   const [otp, setOtp] = useState("");
@@ -427,24 +430,42 @@ const Signup = () => {
 
             {/* Password Input */}
             <CustomizedInput
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               label="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               width="100%"
+              endAdornment={
+                <IconButton
+                  size="small"
+                  onClick={() => setShowPassword(!showPassword)}
+                  sx={{ color: isDark ? "rgba(255,255,255,0.7)" : "#64748b" }}
+                >
+                  {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                </IconButton>
+              }
             />
 
             {/* Re-enter Password Input */}
             <CustomizedInput
-              type="password"
+              type={showConfirmPassword ? "text" : "password"}
               name="confirmPassword"
               label="Re-enter Password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               width="100%"
+              endAdornment={
+                <IconButton
+                  size="small"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  sx={{ color: isDark ? "rgba(255,255,255,0.7)" : "#64748b" }}
+                >
+                  {showConfirmPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                </IconButton>
+              }
             />
 
             {/* Password Match Indicator */}

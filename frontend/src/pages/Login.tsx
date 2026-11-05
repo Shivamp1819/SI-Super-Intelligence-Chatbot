@@ -6,6 +6,7 @@ import {
   Button,
   Chip,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
 import CustomizedInput from "../components/shared/CustomizedInput";
 import { toast } from "react-hot-toast";
@@ -16,7 +17,7 @@ import {
   verifyOtp,
   resetUserPassword,
 } from "../helpers/api-communicator";
-import { FiCheckCircle, FiArrowLeft, FiKey } from "react-icons/fi";
+import { FiCheckCircle, FiArrowLeft, FiKey, FiEye, FiEyeOff } from "react-icons/fi";
 import DynamicRobot from "../components/robot/DynamicRobot";
 import { useThemeMode } from "../context/ThemeContext";
 
@@ -33,6 +34,8 @@ const Login = () => {
   const [loginPassword, setLoginPassword] = useState("");
   const [loginConfirmPassword, setLoginConfirmPassword] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Forgot password form states
   const [resetEmail, setResetEmail] = useState("");
@@ -47,6 +50,8 @@ const Login = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [isResetting, setIsResetting] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
   // Countdown timer for resend OTP
   useEffect(() => {
@@ -331,23 +336,41 @@ const Login = () => {
 
               {/* Password */}
               <CustomizedInput
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 label="Password"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
                 required
                 width="100%"
+                endAdornment={
+                  <IconButton
+                    size="small"
+                    onClick={() => setShowPassword(!showPassword)}
+                    sx={{ color: isDark ? "rgba(255,255,255,0.7)" : "#64748b" }}
+                  >
+                    {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                  </IconButton>
+                }
               />
 
               {/* Re-enter Password */}
               <CustomizedInput
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 label="Re-enter Password"
                 value={loginConfirmPassword}
                 onChange={(e) => setLoginConfirmPassword(e.target.value)}
                 width="100%"
+                endAdornment={
+                  <IconButton
+                    size="small"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    sx={{ color: isDark ? "rgba(255,255,255,0.7)" : "#64748b" }}
+                  >
+                    {showConfirmPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                  </IconButton>
+                }
               />
 
               {/* Password Match Indicator if re-enter is filled */}
@@ -498,7 +521,7 @@ const Login = () => {
                 variant="h5"
                 textAlign="center"
                 fontWeight={700}
-                color="white"
+                color={isDark ? "white" : "#0f172a"}
                 mb={0.3}
               >
                 Reset Password
@@ -507,7 +530,7 @@ const Login = () => {
                 variant="caption"
                 display="block"
                 textAlign="center"
-                color="rgba(255,255,255,0.6)"
+                color={isDark ? "rgba(255,255,255,0.6)" : "#64748b"}
                 mb={1.5}
               >
                 Enter your details to receive an OTP and reset your password
@@ -695,24 +718,42 @@ const Login = () => {
 
               {/* Enter New Password */}
               <CustomizedInput
-                type="password"
+                type={showNewPassword ? "text" : "password"}
                 name="newPassword"
                 label="Enter New Password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
                 width="100%"
+                endAdornment={
+                  <IconButton
+                    size="small"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    sx={{ color: isDark ? "rgba(255,255,255,0.7)" : "#64748b" }}
+                  >
+                    {showNewPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                  </IconButton>
+                }
               />
 
               {/* Re-enter New Password */}
               <CustomizedInput
-                type="password"
+                type={showConfirmNewPassword ? "text" : "password"}
                 name="confirmNewPassword"
                 label="Re-enter New Password"
                 value={confirmNewPassword}
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                 required
                 width="100%"
+                endAdornment={
+                  <IconButton
+                    size="small"
+                    onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                    sx={{ color: isDark ? "rgba(255,255,255,0.7)" : "#64748b" }}
+                  >
+                    {showConfirmNewPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                  </IconButton>
+                }
               />
 
               {/* Password Match Indicator */}

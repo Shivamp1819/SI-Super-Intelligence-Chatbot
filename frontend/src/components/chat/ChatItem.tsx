@@ -24,6 +24,7 @@ import {
 import { AiOutlineFilePdf } from "react-icons/ai";
 import { jsPDF } from "jspdf";
 import toast from "react-hot-toast";
+import { copyTextToClipboard } from "../../helpers/clipboard";
 import {
   speakWithIndianFemaleVoice,
   stopSpeaking,
@@ -55,8 +56,8 @@ function isCodeBlock(str: string) {
 const CodeBlockItem = ({ code, isDark }: { code: string; isDark: boolean }) => {
   const [copiedCode, setCopiedCode] = useState(false);
 
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText(code);
+  const handleCopyCode = async () => {
+    await copyTextToClipboard(code);
     setCopiedCode(true);
     toast.success("Code copied to clipboard!", { icon: "📋" });
     setTimeout(() => setCopiedCode(false), 2000);
@@ -148,8 +149,8 @@ const ChatItem = ({
 
   const messageBlocks = extractCodeFromString(actualContent);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(actualContent);
+  const handleCopy = async () => {
+    await copyTextToClipboard(actualContent);
     setCopied(true);
     toast.success("Copied response to clipboard!");
     setTimeout(() => setCopied(false), 2000);
@@ -194,13 +195,13 @@ const ChatItem = ({
       } catch (err: unknown) {
         if (err instanceof Error && err.name !== "AbortError") {
           console.error("Share error:", err);
-          navigator.clipboard.writeText(shareUrl);
+          await copyTextToClipboard(shareUrl);
           toast.success("Link copied to clipboard!", { icon: "🔗" });
         }
       }
     } else {
       // Direct copy link fallback on browsers without native share support
-      navigator.clipboard.writeText(shareUrl);
+      await copyTextToClipboard(shareUrl);
       toast.success("Link copied to clipboard!", { icon: "🔗" });
     }
   };
@@ -816,7 +817,7 @@ const ChatItem = ({
           }}
         >
           <img
-            src="/si-logo.png"
+            src="/si-logo.svg"
             alt="SI Super Intelligence"
             width="28px"
             height="28px"
