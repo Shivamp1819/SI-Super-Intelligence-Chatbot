@@ -75,8 +75,11 @@ export const resetUserPassword = async (
 
 export const checkAuthStatus = async () => {
   const res = await axios.get("/user/auth-status", { timeout: 4000 });
-  if (res.status !== 200) {
+  if (res.status !== 200 || !res.data) {
     throw new Error("Unable to authenticate");
+  }
+  if (typeof res.data === "string" && res.data.includes("<html")) {
+    throw new Error("Invalid response format");
   }
   return res.data;
 };

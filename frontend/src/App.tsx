@@ -3,7 +3,7 @@ import Header from "./components/Header";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import { useAuth } from "./context/AuthContext";
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 
 // Code-split heavy pages so initial landing page bundle is tiny and loads instantly
 const Login = lazy(() => import("./pages/Login"));

@@ -4,6 +4,8 @@ import App from "./App.tsx";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext.tsx";
+import { ThemeContextProvider } from "./context/ThemeContext.tsx";
+import ErrorBoundary from "./components/shared/ErrorBoundary.tsx";
 import { Toaster } from "react-hot-toast";
 import axios from "axios";
 
@@ -12,8 +14,7 @@ const resolveApiBaseUrl = () => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  // Relative URL works on localhost, mobile network IP, and production
-  return "/api/v1";
+  return import.meta.env.PROD ? "/api/v1" : "/api/v1";
 };
 
 axios.defaults.baseURL = resolveApiBaseUrl();
@@ -31,8 +32,6 @@ if (typeof window !== "undefined" && "speechSynthesis" in window) {
     };
   } catch (_) {}
 }
-import { ThemeContextProvider } from "./context/ThemeContext.tsx";
-import ErrorBoundary from "./components/shared/ErrorBoundary.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

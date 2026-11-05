@@ -71,13 +71,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     async function checkStatus() {
       try {
         const data = await checkAuthStatus();
-        if (data && isMounted) {
-          const userData = { email: data.email, name: data.name };
+        if (
+          data &&
+          typeof data === "object" &&
+          typeof data.email === "string" &&
+          data.email.trim() !== "" &&
+          isMounted
+        ) {
+          const userData = { email: data.email, name: data.name || data.email };
           setUser(userData);
           setIsLoggedIn(true);
           try {
             localStorage.setItem("si_auth_active", "true");
             localStorage.setItem("si_user_data", JSON.stringify(userData));
+          } catch (_) {}
+        } else if (isMounted) {
+          setIsLoggedIn(false);
+          setUser(null);
+          try {
+            localStorage.removeItem("si_auth_active");
+            localStorage.removeItem("si_user_data");
           } catch (_) {}
         }
       } catch (err) {
