@@ -39,24 +39,38 @@ const getPooledTransporter = (targetPort?: number) => {
     return cachedTransporter;
   }
 
+  const isGmail = host.includes("gmail.com") || user.endsWith("@gmail.com");
   const isSecure = port === 465;
-  cachedTransporter = nodemailer.createTransport({
-    host: host || "smtp.gmail.com",
-    port,
-    secure: isSecure,
-    family: 4, // CRITICAL: Force IPv4 to prevent 20-second IPv6 timeout on Indian/cloud networks
-    pool: true, // Keep socket alive for instant subsequent emails
-    maxConnections: 5,
-    maxMessages: 100,
-    connectionTimeout: 4000,
-    greetingTimeout: 4000,
-    socketTimeout: 6000,
-    auth: { user, pass },
-    tls: {
-      rejectUnauthorized: false,
-    },
-  } as any);
 
+  const transportConfig: any = isGmail
+    ? {
+        service: "gmail",
+        pool: true,
+        maxConnections: 5,
+        maxMessages: 100,
+        connectionTimeout: 4000,
+        greetingTimeout: 4000,
+        socketTimeout: 6000,
+        auth: { user, pass },
+      }
+    : {
+        host: host || "smtp.gmail.com",
+        port,
+        secure: isSecure,
+        family: 4, // Force IPv4
+        pool: true,
+        maxConnections: 5,
+        maxMessages: 100,
+        connectionTimeout: 4000,
+        greetingTimeout: 4000,
+        socketTimeout: 6000,
+        auth: { user, pass },
+        tls: {
+          rejectUnauthorized: false,
+        },
+      };
+
+  cachedTransporter = nodemailer.createTransport(transportConfig);
   cachedTransporterPort = port;
   return cachedTransporter;
 };
@@ -200,12 +214,37 @@ export const sendOtpEmail = async (
     }
   }
 
-  // 3. Try Nodemailer with IPv4 on primary port, then alternative port (587 <-> 465)
-  // (Works locally; on Render free/basic tiers, outbound ports 465/587 may be blocked)
+  // 3. Try Nodemailer with pooled Gmail Service or direct SMTP
   const user = (process.env.SMTP_USER || process.env.EMAIL_USER || "").trim();
   const pass = (process.env.SMTP_PASS || process.env.EMAIL_PASS || "").replace(/\s+/g, "");
 
   if (user && pass) {
+    const isGmail = (process.env.SMTP_HOST || "").includes("gmail") || user.endsWith("@gmail.com");
+
+    if (isGmail) {
+      const gmailTransporter = getPooledTransporter(465);
+      if (gmailTransporter) {
+        try {
+          await gmailTransporter.sendMail({
+            from: `"SI Super Intelligence" <${user}>`,
+            to: recipientEmail,
+            subject,
+            html: htmlContent,
+          });
+
+          console.log(`[MAIL SERVICE] Email sent to ${recipientEmail} via Gmail Service`);
+          return {
+            success: true,
+            sentViaSmtp: true,
+            previewOtp: otp,
+            message: `Verification code sent to ${recipientEmail}`,
+          };
+        } catch (err: any) {
+          console.warn(`[MAIL SERVICE] Gmail service attempt failed:`, err?.message || err);
+        }
+      }
+    }
+
     const configuredPort = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT) || 587;
     const portsToTry = configuredPort === 465 ? [465, 587] : [587, 465];
 
@@ -224,6 +263,7 @@ export const sendOtpEmail = async (
           return {
             success: true,
             sentViaSmtp: true,
+            previewOtp: otp,
             message: `Verification code sent to ${recipientEmail}`,
           };
         } catch (err: any) {

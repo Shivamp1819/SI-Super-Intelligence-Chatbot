@@ -69,6 +69,7 @@ const Signup = () => {
       setOtpCountdown(60);
       if (data.previewOtp) {
         setPreviewOtp(data.previewOtp);
+        setOtp(data.previewOtp);
       }
       toast.success(data.message || "OTP sent successfully!");
     } catch (error: unknown) {
@@ -84,14 +85,15 @@ const Signup = () => {
   };
 
   const handleVerifyOtp = async () => {
-    if (!otp.trim()) {
+    const cleanOtp = otp.trim().replace(/\D/g, "");
+    if (!cleanOtp) {
       toast.error("Please enter the 6-digit OTP");
       return;
     }
 
     try {
       setIsOtpVerifying(true);
-      const data = await verifyOtp(email.trim(), otp.trim(), "signup");
+      const data = await verifyOtp(email.trim().toLowerCase(), cleanOtp, "signup");
       if (data.verified) {
         setIsEmailVerified(true);
         toast.success("Email verified successfully!", { icon: "✅" });

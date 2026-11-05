@@ -123,6 +123,7 @@ const Login = () => {
       setResetCountdown(60);
       if (data.previewOtp) {
         setPreviewResetOtp(data.previewOtp);
+        setResetOtp(data.previewOtp);
       }
       toast.success(data.message || "OTP sent successfully!");
     } catch (error: unknown) {
@@ -139,7 +140,8 @@ const Login = () => {
 
   // Forgot Password: Verify OTP
   const handleVerifyResetOtp = async () => {
-    if (!resetOtp.trim()) {
+    const cleanOtp = resetOtp.trim().replace(/\D/g, "");
+    if (!cleanOtp) {
       toast.error("Please enter the 6-digit OTP");
       return;
     }
@@ -147,8 +149,8 @@ const Login = () => {
     try {
       setIsResetOtpVerifying(true);
       const data = await verifyOtp(
-        resetEmail.trim(),
-        resetOtp.trim(),
+        resetEmail.trim().toLowerCase(),
+        cleanOtp,
         "reset_password"
       );
       if (data.verified) {
